@@ -1445,20 +1445,20 @@ void DrawStartupScreen() {
                 const float fs = Fit(u, size);
                 for (int j = 0; j < 12; ++j) {
                     const float a = j * 0.5236f;
-                    GameLayout::DrawText(list, view, *pmFont, u, std::cos(a) * ink, y + bob + std::sin(a) * ink, fs,
+                    GameLayout::DrawLayoutText(list, view, *pmFont, u, std::cos(a) * ink, y + bob + std::sin(a) * ink, fs,
                                          0x18120CFFu, 0x18120CFFu, 1.0f, 1, 1);
                 }
-                GameLayout::DrawText(list, view, *pmFont, u, 0.0f, y + bob, fs, top, bottom, 1.0f, 1, 1);
+                GameLayout::DrawLayoutText(list, view, *pmFont, u, 0.0f, y + bob, fs, top, bottom, 1.0f, 1, 1);
             };
             Outlined("WARIO LAND: SHAKE IT!", cardY + 88.0f, 40.0f, 0xFFF26BFFu, 0xFF9A1EFFu, 3.0f);
             Outlined("Wario Land: Shake It! PC", cardY + 32.0f, 48.0f, 0xFF5A4AFFu, 0xC81E1EFFu, 3.0f);
             {
                 const auto u = GameLayout::Utf16(kCredit);
-                GameLayout::DrawText(list, view, *pmFont, u, 0.0f, cardY - 22.0f + bob, Fit(u, 17.0f), 0x3A2A18FFu,
+                GameLayout::DrawLayoutText(list, view, *pmFont, u, 0.0f, cardY - 22.0f + bob, Fit(u, 17.0f), 0x3A2A18FFu,
                                      0x3A2A18FFu, 1.0f, 1, 1);
                 // How to reach the settings, along the card's bottom edge.
                 const auto hint = GameLayout::Utf16("F10 = settings menu   F11 = fullscreen / window");
-                GameLayout::DrawText(list, view, *pmFont, hint, 0.0f, cardY - hh + 16.0f + bob, Fit(hint, 12.0f),
+                GameLayout::DrawLayoutText(list, view, *pmFont, hint, 0.0f, cardY - hh + 16.0f + bob, Fit(hint, 12.0f),
                                      0x6A5A48FFu, 0x6A5A48FFu, 1.0f, 1, 1);
             }
             if (shaderLine[0] != '\0') {
@@ -1469,7 +1469,7 @@ void DrawStartupScreen() {
                 const float sx = -bw + 4 + p * (2 * bw - 58);
                 list->AddRectFilled(R(sx, by + 6, 0, 0), R(sx + 50, by - 6, 0, 0), IM_COL32(255, 196, 40, 255), 3.0f * k);
                 const auto u = GameLayout::Utf16(shaderLine);
-                GameLayout::DrawText(list, view, *pmFont, u, 0.0f, by - 26.0f + bob, Fit(u, 15.0f), 0x3A2A18FFu, 0x3A2A18FFu,
+                GameLayout::DrawLayoutText(list, view, *pmFont, u, 0.0f, by - 26.0f + bob, Fit(u, 15.0f), 0x3A2A18FFu, 0x3A2A18FFu,
                                      1.0f, 1, 1);
             } else {
                 const float pop = 1.0f + 0.06f * std::sin(t * 5.0f), py = cardY - 80.0f + bob;
@@ -1491,10 +1491,10 @@ void DrawStartupScreen() {
                 const auto outlined = [&](const std::u16string& u, float at) {  // white outline, blue fill, like the title
                     for (int j = 0; j < 12; ++j) {
                         const float a = j * 0.5236f;
-                        GameLayout::DrawText(list, view, *pmFont, u, at + std::cos(a) * 2.5f, py + std::sin(a) * 2.5f, fs,
+                        GameLayout::DrawLayoutText(list, view, *pmFont, u, at + std::cos(a) * 2.5f, py + std::sin(a) * 2.5f, fs,
                                              0xFFFFFFFFu, 0xFFFFFFFFu, 1.0f, 0, 1);
                     }
-                    GameLayout::DrawText(list, view, *pmFont, u, at, py, fs, 0x3D8BFFFFu, 0x1A3FA0FFu, 1.0f, 0, 1);
+                    GameLayout::DrawLayoutText(list, view, *pmFont, u, at, py, fs, 0x3D8BFFFFu, 0x1A3FA0FFu, 1.0f, 0, 1);
                 };
                 outlined(press, x);
                 if (!icon.empty()) {
@@ -1993,7 +1993,7 @@ void DrawControlsPanel() {
     const auto text = [&](const char* s, float x, float y, float size, uint32_t rgba, int originH) {
         if (gameFont) {
             const uint32_t c = (rgba & 0xFFFFFF00u) | static_cast<uint32_t>(a(rgba & 0xFF));
-            GameLayout::DrawText(list, view, *font, GameLayout::Utf16(s), x, y, size, c, c, 1.0f, originH, 1);
+            GameLayout::DrawLayoutText(list, view, *font, GameLayout::Utf16(s), x, y, size, c, c, 1.0f, originH, 1);
         } else {
             const ImVec2 p = at(x, y);
             const float w = ImGui::CalcTextSize(s).x;

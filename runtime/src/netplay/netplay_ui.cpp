@@ -321,9 +321,9 @@ void Text(const Canvas& c, const std::string& text, float x, float y, float size
         return;
     }
     const std::u16string t = Utf16(text);
-    GameLayout::DrawText(c.list, c.view, *a.message, t, x + 2.5f, y - 2.5f, size, 0x30200AFFu, 0x30200AFFu,
+    GameLayout::DrawLayoutText(c.list, c.view, *a.message, t, x + 2.5f, y - 2.5f, size, 0x30200AFFu, 0x30200AFFu,
                          0.55f * c.alpha, originH, 1);
-    GameLayout::DrawText(c.list, c.view, *a.message, t, x, y, size, color, color, c.alpha, originH, 1);
+    GameLayout::DrawLayoutText(c.list, c.view, *a.message, t, x, y, size, color, color, c.alpha, originH, 1);
 }
 
 // A title in the game's Mario font (yellow to orange), like "Select Players".
@@ -332,7 +332,7 @@ void Title(const Canvas& c, const std::string& text, float x, float y, float siz
     if (!GameLayout::FontReady(a.mario.get())) {
         return;
     }
-    GameLayout::DrawText(c.list, c.view, *a.mario, Utf16(text), x, y, size, 0xFFFF00FFu, 0xFF8C00FFu, c.alpha, 1, 1);
+    GameLayout::DrawLayoutText(c.list, c.view, *a.mario, Utf16(text), x, y, size, 0xFFFF00FFu, 0xFF8C00FFu, c.alpha, 1, 1);
 }
 
 float Pulse(int frame) {

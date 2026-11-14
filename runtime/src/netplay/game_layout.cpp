@@ -725,7 +725,7 @@ float LineHeight(const Font& font, float fontSize) {
     return font.height == 0 ? 0 : font.linefeed * fontSize / font.height;
 }
 
-void DrawText(ImDrawList* list, const View& view, const Font& font, const std::u16string& text, float x, float y,
+void DrawLayoutText(ImDrawList* list, const View& view, const Font& font, const std::u16string& text, float x, float y,
               float fontSize, uint32_t topColor, uint32_t bottomColor, float alpha, int originH, int originV) {
     Rgba top = FromRgba8(topColor), bottom = FromRgba8(bottomColor);
     top.a *= alpha;

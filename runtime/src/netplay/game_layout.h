@@ -98,7 +98,8 @@ float MeasureText(const Font& font, const std::u16string& text, float fontSize);
 std::vector<std::u16string> WrapText(const Font& font, const std::u16string& text, float fontSize, float maxWidth);
 // The height of one line of `font` at `fontSize`, in layout units.
 float LineHeight(const Font& font, float fontSize);
-void DrawText(ImDrawList* list, const View& view, const Font& font, const std::u16string& text, float x, float y,
+// Not "DrawText": <windows.h> defines DrawText as a macro (DrawTextA/W).
+void DrawLayoutText(ImDrawList* list, const View& view, const Font& font, const std::u16string& text, float x, float y,
               float fontSize, uint32_t topColor, uint32_t bottomColor, float alpha, int originH = 1, int originV = 1);
 
 std::u16string Utf16(const std::string& utf8);
