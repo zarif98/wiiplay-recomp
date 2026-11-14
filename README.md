@@ -21,7 +21,7 @@ Next goal: **4-player Tanks!** (the original supports at most two).
 | Boot, menus, Mii select, saves | ✅ |
 | All 9 minigames incl. Tanks! | ✅ playable |
 | Audio | ✅ |
-| Graphics | ✅ mostly correct; some block textures in Tanks! decode as stripes/noise, occasional lighting oddities |
+| Graphics | ✅ mostly correct; occasional lighting oddities |
 | Controls | keyboard + mouse (pointer), optional keyboard player 2 |
 | Platforms | macOS on Apple Silicon (tested). Linux/Windows untested |
 

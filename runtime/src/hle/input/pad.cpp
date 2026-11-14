@@ -106,7 +106,7 @@ extern "C" uint32_t PAD__Init_HLE()
 #if 0  // NSMBW: PADInit is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AF2F0) */
-PPC_NATIVE_OVERRIDE(817F00B0, PAD__Init_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00A0, PAD__Init_HLE, uint32_t, (), ());
 #endif
 #endif
 #endif
@@ -144,7 +144,7 @@ extern "C" uint32_t PAD__Read_HLE(uint32_t statusPtr)
 #if 0  // NSMBW: PADRead is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AF44C) */
-PPC_NATIVE_OVERRIDE(817F00B4, PAD__Read_HLE, uint32_t, (uint32_t statusPtr), (statusPtr));
+PPC_NATIVE_OVERRIDE(817F00A4, PAD__Read_HLE, uint32_t, (uint32_t statusPtr), (statusPtr));
 #endif
 #endif
 #endif
@@ -156,7 +156,7 @@ extern "C" uint32_t PAD__Reset_HLE(uint32_t mask)
 #if 0  // NSMBW: PADReset is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AF0DC) */
-PPC_NATIVE_OVERRIDE(817F00B8, PAD__Reset_HLE, uint32_t, (uint32_t mask), (mask));
+PPC_NATIVE_OVERRIDE(817F00A8, PAD__Reset_HLE, uint32_t, (uint32_t mask), (mask));
 #endif
 #endif
 #endif
@@ -168,7 +168,7 @@ extern "C" uint32_t PAD__Recalibrate_HLE(uint32_t mask)
 #if 0  // NSMBW: PADRecalibrate is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AF1E4) */
-PPC_NATIVE_OVERRIDE(817F00BC, PAD__Recalibrate_HLE, uint32_t, (uint32_t mask), (mask));
+PPC_NATIVE_OVERRIDE(817F00AC, PAD__Recalibrate_HLE, uint32_t, (uint32_t mask), (mask));
 #endif
 #endif
 #endif
@@ -180,9 +180,5 @@ extern "C" void PAD__ControlMotor_HLE(int32_t chan, uint32_t command)
     }
     PADControlMotor(chan, command);
 }
-#if 0  // NSMBW: PADControlMotor is not linked into NSMBW (was MKW-only)
-#if 0
-/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+// WII PLAY: enabled (the function exists in Wii Play; it was off only for other games).
 PPC_NATIVE_OVERRIDE_VOID(800CA884, PAD__ControlMotor_HLE, (int32_t chan, uint32_t command), (chan, command));
-#endif
-#endif

@@ -46,6 +46,8 @@ extern "C" void WarioIntroButtons(uint32_t hold);
 #endif
 
 #include <aurora/aurora.h>
+extern "C" uint64_t NandFlushNanosTotal();
+extern "C" uint32_t AlarmRefusalsTotal();
 
 // Forward declaration for OSWakeupThread - used to wake threads on VI retrace queue
 extern "C" void OSWakeupThread_HLE_801aaaa4(CpuContext* ctx);
@@ -971,6 +973,16 @@ void VI_HLE_PresentFrame(bool presentedXfb, bool paceToRetrace) {
         const uint32_t frameReads = dvdReads - s_lastDvdReads;
         s_lastDvd = dvdTotal;
         s_lastDvdReads = dvdReads;
+        static uint64_t s_lastTex = 0, s_lastNand = 0;
+        static uint32_t s_lastRefusals = 0;
+        const uint32_t refusals = AlarmRefusalsTotal();
+        const uint32_t frameRefusals = refusals - s_lastRefusals;
+        s_lastRefusals = refusals;
+        const uint64_t texTotal = AuroraTextureConvertNanosTotal();
+        const uint64_t nandTotal = NandFlushNanosTotal();
+        const double texMs = (texTotal - s_lastTex) / 1e6, nandMs = (nandTotal - s_lastNand) / 1e6;
+        s_lastTex = texTotal;
+        s_lastNand = nandTotal;
         const Clock::time_point now = Clock::now();
         if (s_lastEnd != Clock::time_point{}) {
             const double frame = ms(now - s_lastEnd);
@@ -979,12 +991,10 @@ void VI_HLE_PresentFrame(bool presentedXfb, bool paceToRetrace) {
                 s_logged = 0;
             }
             if (frame > 20.0 && frame < 2000.0 && s_logged++ < 30) {
-                uint32_t sceneWord = 0;
-                Memory::TryRead32(0x80428730u, sceneWord);
                 RT_LOGF(RT_TAG_VI,
-                        "slow frame %.1f ms (scene 0x%03X): game %.2f (gx %.2f, disc %.2f in %u reads), present %.2f, "
+                        "slow frame %.1f ms: game %.2f (gx %.2f, tex %.2f, save %.2f, disc %.2f in %u reads, alarm-skips %u), present %.2f, "
                         "end_frame %.2f, pace %.2f\n",
-                        frame, sceneWord & 0xFFFFu, ms(presentStart - s_lastEnd), gxMs, dvdMs, frameReads,
+                        frame, ms(presentStart - s_lastEnd), gxMs, texMs, nandMs, dvdMs, frameReads, frameRefusals,
                         ms(endFrameStart - presentStart),
                         ms(paceStart - endFrameStart), ms(now - paceStart));
             }
@@ -1110,7 +1120,7 @@ extern "C" void VIInit_caseD_0_HLE_801b9934(CpuContext* ctx)
 #if 0  // NSMBW: MKW switch-case label; its function is native in NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B9934) */
-PPC_NATIVE_OVERRIDE_VOID(817F01F0, VIInit_caseD_0_HLE_801b9934, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01E0, VIInit_caseD_0_HLE_801b9934, (CpuContext* ctx), (ctx));
 #endif
 #endif
 #endif
@@ -1123,7 +1133,7 @@ extern "C" void VIInit_caseD_1_HLE_801b993c(CpuContext* ctx)
 #if 0  // NSMBW: MKW switch-case label; its function is native in NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B993C) */
-PPC_NATIVE_OVERRIDE_VOID(817F01F4, VIInit_caseD_1_HLE_801b993c, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01E4, VIInit_caseD_1_HLE_801b993c, (CpuContext* ctx), (ctx));
 #endif
 #endif
 #endif
@@ -1136,7 +1146,7 @@ extern "C" void VIInit_caseD_2_HLE_801b9944(CpuContext* ctx)
 #if 0  // NSMBW: MKW switch-case label; its function is native in NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B9944) */
-PPC_NATIVE_OVERRIDE_VOID(817F01F8, VIInit_caseD_2_HLE_801b9944, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01E8, VIInit_caseD_2_HLE_801b9944, (CpuContext* ctx), (ctx));
 #endif
 #endif
 #endif
@@ -1296,7 +1306,7 @@ extern "C" void VIGetNextFrameBuffer_HLE_801bab24(CpuContext* ctx)
 #if 0  // NSMBW: VIGetNextFrameBuffer is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801BAB24) */
-PPC_NATIVE_OVERRIDE_VOID(817F01FC, VIGetNextFrameBuffer_HLE_801bab24, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01EC, VIGetNextFrameBuffer_HLE_801bab24, (CpuContext* ctx), (ctx));
 #endif
 #endif
 #endif
@@ -1325,7 +1335,7 @@ extern "C" void VIGetRetraceCount_HLE_801baba4(CpuContext* ctx)
     ViSetR3(ctx, count);
     VI_HLE_PollRetrace(ctx);
 }
-PPC_NATIVE_OVERRIDE_VOID(817F0200, VIGetRetraceCount_HLE_801baba4, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01F0, VIGetRetraceCount_HLE_801baba4, (CpuContext* ctx), (ctx));
 
 extern "C" void VIGetNextField_HLE_801babac(CpuContext* ctx)
 {
@@ -1338,7 +1348,7 @@ extern "C" void VIGetNextField_HLE_801babac(CpuContext* ctx)
     ViSetR3(ctx, fieldOdd ? 1 : 0);
     VI_HLE_PollRetrace(ctx);
 }
-PPC_NATIVE_OVERRIDE_VOID(817F0204, VIGetNextField_HLE_801babac, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01F4, VIGetNextField_HLE_801babac, (CpuContext* ctx), (ctx));
 
 extern "C" void VIGetCurrentLine_HLE_801bac48(CpuContext* ctx)
 {

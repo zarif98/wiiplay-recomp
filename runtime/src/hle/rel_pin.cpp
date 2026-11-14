@@ -61,5 +61,5 @@ extern "C" void GAME__memAlloc_Cpu(CpuContext* ctx)
 }
 
 #if 0 /* WARIO-TODO: falta la direccion de __memAlloc (base 801A5634) */
-PPC_NATIVE_OVERRIDE_VOID(817F012C, GAME__memAlloc_Cpu, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F011C, GAME__memAlloc_Cpu, (CpuContext* ctx), (ctx));
 #endif

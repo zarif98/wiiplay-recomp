@@ -164,4 +164,4 @@ extern "C" [[noreturn]] void OS__LoadContext_801a1f58(CpuContext* ctx)
     std::abort();
 }
 
-PPC_NATIVE_OVERRIDE_VOID(817F00F8, OS__LoadContext_801a1f58, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F00E8, OS__LoadContext_801a1f58, (CpuContext* ctx), (ctx));

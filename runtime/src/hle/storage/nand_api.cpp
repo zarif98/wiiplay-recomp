@@ -130,7 +130,7 @@ extern "C" int32_t NANDGetCurrentDir_HLE(uint32_t outPathPtr) {
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801DAA70) */
-PPC_NATIVE_OVERRIDE(817F014C, NANDGetCurrentDir_HLE, int32_t, (uint32_t outPathPtr), (outPathPtr));
+PPC_NATIVE_OVERRIDE(817F013C, NANDGetCurrentDir_HLE, int32_t, (uint32_t outPathPtr), (outPathPtr));
 #endif
 #endif
 
@@ -247,8 +247,8 @@ extern "C" int32_t NANDOpen_HLE(uint32_t pathPtr, uint32_t fileInfoPtr, uint32_t
     Memory::Write8(fileInfoPtr + 0x8a, NAND_OPEN_FLAG_OPEN);
     return NAND_RESULT_OK;
 }
-PPC_NATIVE_OVERRIDE(817F0150, NANDOpen_HLE, int32_t, (uint32_t pathPtr, uint32_t fileInfoPtr, uint32_t mode), (pathPtr, fileInfoPtr, mode));
-PPC_NATIVE_OVERRIDE(817F0154, NANDOpen_HLE, int32_t, (uint32_t pathPtr, uint32_t fileInfoPtr, uint32_t mode), (pathPtr, fileInfoPtr, mode));  // WARIO: NANDPrivateOpen
+PPC_NATIVE_OVERRIDE(817F0140, NANDOpen_HLE, int32_t, (uint32_t pathPtr, uint32_t fileInfoPtr, uint32_t mode), (pathPtr, fileInfoPtr, mode));
+PPC_NATIVE_OVERRIDE(817F0144, NANDOpen_HLE, int32_t, (uint32_t pathPtr, uint32_t fileInfoPtr, uint32_t mode), (pathPtr, fileInfoPtr, mode));  // WARIO: NANDPrivateOpen
 
 extern "C" int32_t NANDClose_HLE(uint32_t fileInfoPtr) {
     NSMBW_NAND_TRACE("NANDClose fileInfo=0x%08X fd=%d\n", fileInfoPtr,
@@ -282,7 +282,7 @@ extern "C" int32_t NANDClose_HLE(uint32_t fileInfoPtr) {
     Memory::Write8(fileInfoPtr + 0x8a, NAND_OPEN_FLAG_CLOSED); // Mark as closed
     return NAND_RESULT_OK;
 }
-PPC_NATIVE_OVERRIDE(817F0158, NANDClose_HLE, int32_t, (uint32_t fileInfoPtr), (fileInfoPtr));
+PPC_NATIVE_OVERRIDE(817F0148, NANDClose_HLE, int32_t, (uint32_t fileInfoPtr), (fileInfoPtr));
 
 extern "C" int32_t NANDRead_HLE(uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length) {
     NSMBW_NAND_TRACE("NANDRead fileInfo=0x%08X fd=%d len=%u\n", fileInfoPtr,
@@ -304,7 +304,7 @@ extern "C" int32_t NANDRead_HLE(uint32_t fileInfoPtr, uint32_t bufferPtr, uint32
     size_t bytesRead = std::fread(buffer, 1, length, handle->file);
     return static_cast<int32_t>(bytesRead);
 }
-PPC_NATIVE_OVERRIDE(817F015C, NANDRead_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length), (fileInfoPtr, bufferPtr, length));
+PPC_NATIVE_OVERRIDE(817F014C, NANDRead_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length), (fileInfoPtr, bufferPtr, length));
 
 extern "C" int32_t NANDWrite_HLE(uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length) {
     NSMBW_NAND_TRACE("NANDWrite fileInfo=0x%08X fd=%d len=%u\n", fileInfoPtr,
@@ -327,7 +327,7 @@ extern "C" int32_t NANDWrite_HLE(uint32_t fileInfoPtr, uint32_t bufferPtr, uint3
     std::fflush(handle->file);
     return static_cast<int32_t>(bytesWritten);
 }
-PPC_NATIVE_OVERRIDE(817F0160, NANDWrite_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length), (fileInfoPtr, bufferPtr, length));
+PPC_NATIVE_OVERRIDE(817F0150, NANDWrite_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t bufferPtr, uint32_t length), (fileInfoPtr, bufferPtr, length));
 
 extern "C" int32_t NANDSeek_HLE(uint32_t fileInfoPtr, int32_t offset, int32_t whence) {
     if (!fileInfoPtr) {
@@ -366,7 +366,7 @@ extern "C" int32_t NANDGetLength_HLE(uint32_t fileInfoPtr, uint32_t outLengthPtr
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801D9040) */
-PPC_NATIVE_OVERRIDE(817F0164, NANDGetLength_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t outLengthPtr), (fileInfoPtr, outLengthPtr));
+PPC_NATIVE_OVERRIDE(817F0154, NANDGetLength_HLE, int32_t, (uint32_t fileInfoPtr, uint32_t outLengthPtr), (fileInfoPtr, outLengthPtr));
 #endif
 #endif
 
@@ -396,7 +396,7 @@ extern "C" int32_t NANDCreate_HLE(uint32_t pathPtr, uint32_t perm, uint32_t attr
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801D84E0) */
-PPC_NATIVE_OVERRIDE(817F0168, NANDCreate_HLE, int32_t, (uint32_t pathPtr, uint32_t perm, uint32_t attr), (pathPtr, perm, attr));
+PPC_NATIVE_OVERRIDE(817F0158, NANDCreate_HLE, int32_t, (uint32_t pathPtr, uint32_t perm, uint32_t attr), (pathPtr, perm, attr));
 #endif
 #endif
 
@@ -446,7 +446,7 @@ extern "C" int32_t NANDCreateDir_HLE(uint32_t pathPtr, uint32_t perm, uint32_t a
 #if 0  // NSMBW: NANDCreateDir is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 8019BBE0) */
-PPC_NATIVE_OVERRIDE(817F016C, NANDCreateDir_HLE, int32_t, (uint32_t pathPtr, uint32_t perm, uint32_t attr), (pathPtr, perm, attr));
+PPC_NATIVE_OVERRIDE(817F015C, NANDCreateDir_HLE, int32_t, (uint32_t pathPtr, uint32_t perm, uint32_t attr), (pathPtr, perm, attr));
 #endif
 #endif
 #endif
@@ -598,7 +598,7 @@ extern "C" int32_t NANDMove_HLE(uint32_t srcPathPtr, uint32_t dstPathPtr) {
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801D8FD0) */
-PPC_NATIVE_OVERRIDE(817F0170, NANDMove_HLE, int32_t, (uint32_t srcPathPtr, uint32_t dstPathPtr), (srcPathPtr, dstPathPtr));
+PPC_NATIVE_OVERRIDE(817F0160, NANDMove_HLE, int32_t, (uint32_t srcPathPtr, uint32_t dstPathPtr), (srcPathPtr, dstPathPtr));
 #endif
 #endif
 
@@ -626,7 +626,7 @@ extern "C" int32_t NANDGetStatus_HLE(uint32_t pathPtr, uint32_t outStatusPtr) {
 #if 0  // NSMBW: NANDGetStatus is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 8019C380) */
-PPC_NATIVE_OVERRIDE(817F0174, NANDGetStatus_HLE, int32_t, (uint32_t pathPtr, uint32_t outStatusPtr), (pathPtr, outStatusPtr));
+PPC_NATIVE_OVERRIDE(817F0164, NANDGetStatus_HLE, int32_t, (uint32_t pathPtr, uint32_t outStatusPtr), (pathPtr, outStatusPtr));
 #endif
 #endif
 #endif
@@ -651,7 +651,7 @@ extern "C" int32_t NANDGetType_HLE(uint32_t pathPtr, uint32_t outTypePtr) {
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801DAE70) */
-PPC_NATIVE_OVERRIDE(817F0178, NANDGetType_HLE, int32_t, (uint32_t pathPtr, uint32_t outTypePtr), (pathPtr, outTypePtr));
+PPC_NATIVE_OVERRIDE(817F0168, NANDGetType_HLE, int32_t, (uint32_t pathPtr, uint32_t outTypePtr), (pathPtr, outTypePtr));
 #endif
 #endif
 
@@ -666,7 +666,7 @@ extern "C" int32_t contentFastOpenNAND_HLE(uint32_t contentId, uint32_t outHandl
 #if 0  // NSMBW: contentFastOpenNAND is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 8015BC80) */
-PPC_NATIVE_OVERRIDE(817F017C, contentFastOpenNAND_HLE, int32_t, (uint32_t contentId, uint32_t outHandlePtr), (contentId, outHandlePtr));
+PPC_NATIVE_OVERRIDE(817F016C, contentFastOpenNAND_HLE, int32_t, (uint32_t contentId, uint32_t outHandlePtr), (contentId, outHandlePtr));
 #endif
 #endif
 #endif
@@ -677,7 +677,7 @@ extern "C" int32_t contentReadNAND_HLE(uint32_t handlePtr, uint32_t buffer, uint
 #if 0  // NSMBW: contentReadNAND is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 8015BCF8) */
-PPC_NATIVE_OVERRIDE(817F0180, contentReadNAND_HLE, int32_t, (uint32_t handlePtr, uint32_t buffer, uint32_t length, uint32_t outReadPtr), (handlePtr, buffer, length, outReadPtr));
+PPC_NATIVE_OVERRIDE(817F0170, contentReadNAND_HLE, int32_t, (uint32_t handlePtr, uint32_t buffer, uint32_t length, uint32_t outReadPtr), (handlePtr, buffer, length, outReadPtr));
 #endif
 #endif
 #endif

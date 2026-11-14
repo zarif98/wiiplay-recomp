@@ -6,7 +6,7 @@
 namespace NetworkHle {
 
 #if 0  // NSMBW: NHTTP is not linked into NSMBW
-extern "C" void func_817F00EC(CpuContext* ctx);
+extern "C" void func_817F00DC(CpuContext* ctx);
 #endif
 #if 0  // NSMBW: NHTTP is not linked into NSMBW
 extern "C" void func_801D9E94(CpuContext* ctx);
@@ -54,7 +54,7 @@ extern "C" void NHTTPStartup_Reentrant_HLE_801d8d30(CpuContext* ctx) {
     ctx->gpr[3] = savedR3;
     ctx->gpr[4] = savedR4;
     ctx->gpr[5] = savedR5;
-    func_817F00EC(ctx);
+    func_817F00DC(ctx);
 
     const int32_t result = static_cast<int32_t>(ctx->gpr[3]);
     if (result < 0) {
@@ -73,7 +73,7 @@ extern "C" void NHTTPStartup_Reentrant_HLE_801d8d30(CpuContext* ctx) {
 
 #if 0  // NSMBW: NHTTPStartup_Reentrant is not linked into NSMBW (was MKW-only)
 #if 0
-REGISTER_NATIVE_FUNCTION_AS(0x817F00EC, NHTTPStartup_Reentrant_HLE_801d8d30, "NHTTPStartup_Reentrant_HLE_801d8d30");
+REGISTER_NATIVE_FUNCTION_AS(0x817F00DC, NHTTPStartup_Reentrant_HLE_801d8d30, "NHTTPStartup_Reentrant_HLE_801d8d30");
 #endif
 #endif
 

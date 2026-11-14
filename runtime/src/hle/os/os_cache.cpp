@@ -57,21 +57,27 @@ bool ValidateCacheRange(const char* label, const CacheRange& range)
     return true;
 }
 
-void DcRangeOp(const char* label, uint32_t addr, uint32_t length)
+void DcRangeOp(const char* label, uint32_t addr, uint32_t length, bool cpuReadsGpuData = false)
 {
     CacheRange range{};
     if (!NormalizeCacheRange(addr, length, range) || !ValidateCacheRange(label, range)) {
         return;
     }
 
-    DownloadEfbCopiesForRange(range.start, range.size);
+    // WII PLAY: only DCInvalidateRange means "the CPU is about to read what the GPU wrote". A flush or
+    // store means the CPU wrote newer bytes, often into a recycled heap block that once held an EFB copy.
+    // Downloading the stale copy there clobbered freshly loaded data (Tanks!' block.1 texture got a
+    // band of an old intensity copy = striped block tops). Those ranges just retire the copy below.
+    if (cpuReadsGpuData) {
+        DownloadEfbCopiesForRange(range.start, range.size);
+    }
     GxNotifyGuestRamDmaWrite(range.start, range.size);
 }
 } // namespace
 
 extern "C" void DCInvalidateRange_801a1600(uint32_t addr, uint32_t length)
 {
-    DcRangeOp("DCInvalidateRange_801a1600", addr, length);
+    DcRangeOp("DCInvalidateRange_801a1600", addr, length, true);
 }
 
 extern "C" void DCFlushRange_801a162c(uint32_t addr, uint32_t length)
@@ -98,10 +104,8 @@ PPC_NATIVE_OVERRIDE_VOID(800EDD8C, DCInvalidateRange_801a1600, (uint32_t addr, u
 PPC_NATIVE_OVERRIDE_VOID(800EDDB8, DCFlushRange_801a162c, (uint32_t addr, uint32_t length), (addr, length));
 PPC_NATIVE_OVERRIDE_VOID(800EDDE8, DCStoreRange_801a165c, (uint32_t addr, uint32_t length), (addr, length));
 PPC_NATIVE_OVERRIDE_VOID(800EDE18, DCFlushRangeNoSync_801a168c, (uint32_t addr, uint32_t length), (addr, length));
-#if 0
-/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+// WII PLAY: enabled so these stores also notify the GX texture caches.
 PPC_NATIVE_OVERRIDE_VOID(800EDE44, DCStoreRangeNoSync_801a16b8, (uint32_t addr, uint32_t length), (addr, length));
-#endif
 
 // ----------------------------------------------------------------------------
 // CPU Cache Maintenance Stubs (DC/IC/LC)
@@ -232,9 +236,9 @@ PPC_NATIVE_OVERRIDE_VOID(800EDEE0, Cache_Maintenance_Stub, (), ()); // ICEnable
 PPC_NATIVE_OVERRIDE_VOID(800EDEF4, Cache_Maintenance_Stub, (), ()); // __LCEnable
 PPC_NATIVE_OVERRIDE_VOID(800EDFC0, Cache_Maintenance_Stub, (), ()); // LCEnable
 PPC_NATIVE_OVERRIDE_VOID(800EDFF8, Cache_Maintenance_Stub, (), ()); // LCDisable
-PPC_NATIVE_OVERRIDE_VOID(817F00F0, LCLoadBlocks_HLE_801a1894, (CpuContext* ctx), (ctx)); // LCLoadBlocks
+PPC_NATIVE_OVERRIDE_VOID(817F00E0, LCLoadBlocks_HLE_801a1894, (CpuContext* ctx), (ctx)); // LCLoadBlocks
 PPC_NATIVE_OVERRIDE_VOID(800EE044, LCStoreBlocks_HLE_801a18b8, (CpuContext* ctx), (ctx)); // LCStoreBlocks
 PPC_NATIVE_OVERRIDE(800EE068, LCStoreData_HLE_801a18dc, uint32_t, (CpuContext* ctx), (ctx)); // LCStoreData
-PPC_NATIVE_OVERRIDE(817F00F4, LCQueueLength_HLE_801a197c, uint32_t, (CpuContext* ctx), (ctx)); // LCQueueLength
+PPC_NATIVE_OVERRIDE(817F00E4, LCQueueLength_HLE_801a197c, uint32_t, (CpuContext* ctx), (ctx)); // LCQueueLength
 PPC_NATIVE_OVERRIDE_VOID(800EE114, LCQueueWait_HLE_801a1988, (CpuContext* ctx), (ctx)); // LCQueueWait
 PPC_NATIVE_OVERRIDE_VOID(800EE270, Cache_Maintenance_Stub, (), ()); // OS____CacheInit

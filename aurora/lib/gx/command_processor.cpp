@@ -545,8 +545,7 @@ static bool StatTiming() {
 #if defined(_WIN32)
   return true;
 #else
-  static const bool on = std::getenv("NSMBW_LOG_FPS") != nullptr;
-  return on;
+  return true;  // WII PLAY: always time GX processing so slow-frame reports show it
 #endif
 }
 struct ProcessTimer {

@@ -352,7 +352,7 @@ extern "C" void OS__SleepTicks_HLE_801aaca8(CpuContext* ctx)
 }
 #if 0  // NSMBW: OSSleepTicks is not linked into NSMBW (was MKW-only)
 #if 0
-REGISTER_NATIVE_FUNCTION(0x817F0124, OS__SleepTicks_HLE_801aaca8);
+REGISTER_NATIVE_FUNCTION(0x817F0114, OS__SleepTicks_HLE_801aaca8);
 #endif
 #endif
 

@@ -1,6 +1,7 @@
 #include "gx_internal.h"
 #include "runtime_log.h"
 
+#include <atomic>
 #include <cstddef>
 #include <limits>
 
@@ -553,6 +554,12 @@ GXTexObj* GetHostTexObj(uint32_t addr) {
         // no host twin yet. Build it from the guest struct: a blank one kept a zero width, height and
         // format, and GXLoadTexObj then sampled the right data as a 1x1 I4 texture (white platforms).
         const TexObjMeta guest = ExtractTexObjMetaFromGuest(addr);
+        {   // WII PLAY diagnostic (texture glitches): what the fallback rebuilds
+            static int n = 0;
+            if (n++ < 40) RT_LOGF(RT_TAG_GX, "[tex-diag] fallback @0x%08X fmt=%u %ux%u data=0x%08X tlut=%u mip=%d wrap=%u/%u\n",
+                                  addr, guest.format, guest.width, guest.height, guest.dataAddr, guest.tlut,
+                                  (int)guest.mipmap, guest.wrapS, guest.wrapT);
+        }
         if (IsUsableTexObjMeta(guest)) {
             if (void* data = GuestToHostPtr(guest.dataAddr)) {
                 if (IsPaletteTexFormat(guest.format)) {
@@ -656,10 +663,14 @@ extern "C" void GxNotifyDisplayListMemoryWrite(uint32_t addr, uint32_t size);
 // cache stores) that the SDK brackets with DCInvalidateRange rather than a flush, so the normal
 // DC flush/store interceptors never see them. Without this call, GX caches keyed on guest bytes
 // keep serving stale contents and a reloaded track reuses old texture pixels at the same address.
+// WII PLAY: set on every DMA/DC-range write, consumed by GXLoadTexObj (see GxConsumeTexInvalidate).
+std::atomic<bool> g_pendingTexInvalidate{false};
+
 extern "C" void GxNotifyGuestRamDmaWrite(uint32_t addr, uint32_t size) {
     if (size == 0) {
         return;
     }
+    g_pendingTexInvalidate.store(true, std::memory_order_relaxed);
     MarkTexObjsDirtyForRange(addr, size);
     MarkTlutObjsDirtyForRange(addr, size);
     GxNotifyDisplayListMemoryWrite(addr, size);

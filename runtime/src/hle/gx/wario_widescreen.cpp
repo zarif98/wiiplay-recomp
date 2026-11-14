@@ -95,7 +95,7 @@ float ScreenEdgeX(uint32_t obj, uint32_t halfConstAddr) {
 }  // namespace
 
 extern "C" float Wario_ScreenRightX_HLE(uint32_t obj) { return ScreenEdgeX(obj, 0x80620B2Cu); }
-PPC_NATIVE_OVERRIDE(817F00A0, Wario_ScreenRightX_HLE, float, (uint32_t obj), (obj));
+PPC_NATIVE_OVERRIDE(817F0090, Wario_ScreenRightX_HLE, float, (uint32_t obj), (obj));
 
 extern "C" float Wario_ScreenLeftX_HLE(uint32_t obj) { return ScreenEdgeX(obj, 0x80620B28u); }
-PPC_NATIVE_OVERRIDE(817F00A4, Wario_ScreenLeftX_HLE, float, (uint32_t obj), (obj));
+PPC_NATIVE_OVERRIDE(817F0094, Wario_ScreenLeftX_HLE, float, (uint32_t obj), (obj));

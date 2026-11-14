@@ -1,3 +1,4 @@
+#include <atomic>
 #include <cstdio>
 // OSAlarm queue HLE.
 
@@ -146,13 +147,18 @@ bool IsLikelyCodeAddress(uint32_t addr)
 } // namespace
 
 namespace OsHleInternal {
+std::atomic<uint32_t> g_alarmRefusals{0};
+extern "C" uint32_t AlarmRefusalsTotal() { return g_alarmRefusals.load(std::memory_order_relaxed); }
+
 bool ProcessAlarmQueue(CpuContext* cpu, int maxToProcess)
 {
     if (!cpu || maxToProcess <= 0) {
         return false;
     }
 
-    if (g_alarmProcessDepth != 0) {        return false;
+    if (g_alarmProcessDepth != 0) {
+        g_alarmRefusals.fetch_add(1, std::memory_order_relaxed);  // WII PLAY diagnostic (stutters)
+        return false;
     }
 
     EnsureSda1Base(cpu);

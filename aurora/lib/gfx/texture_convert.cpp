@@ -9,6 +9,10 @@
 #include <limits>
 #include <optional>
 #include <vector>
+#include <atomic>
+#include <chrono>
+std::atomic<uint64_t> g_textureConvertNanos{0};
+extern "C" uint64_t AuroraTextureConvertNanosTotal() { return g_textureConvertNanos.load(std::memory_order_relaxed); }
 
 namespace aurora::gfx {
 static Module Log("aurora::gfx");
@@ -554,7 +558,16 @@ static ByteBuffer BuildRGBA8FromCMPR(uint32_t width, uint32_t height, uint32_t m
   return buf;
 }
 
+static ConvertedTexture convert_texture_impl(u32 format, uint32_t width, uint32_t height, uint32_t mips, ArrayRef<uint8_t> data);
 ConvertedTexture convert_texture(u32 format, uint32_t width, uint32_t height, uint32_t mips, ArrayRef<uint8_t> data) {
+  // WII PLAY: time texture decoding for slow-frame reports.
+  const auto start = std::chrono::steady_clock::now();
+  ConvertedTexture out = convert_texture_impl(format, width, height, mips, data);
+  g_textureConvertNanos.fetch_add(std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::steady_clock::now() - start).count(), std::memory_order_relaxed);
+  return out;
+}
+static ConvertedTexture convert_texture_impl(u32 format, uint32_t width, uint32_t height, uint32_t mips, ArrayRef<uint8_t> data) {
   const uint32_t maxMips = max_texture_mip_count(width, height);
   const uint32_t safeMips = std::clamp(mips, 1u, maxMips);
   if (safeMips != mips) {

@@ -554,7 +554,7 @@ extern "C" void OSJoinThread_HLE_801aa3ac(CpuContext* ctx)
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B5670) */
-PPC_NATIVE_OVERRIDE_VOID(817F0128, OSJoinThread_HLE_801aa3ac, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F0118, OSJoinThread_HLE_801aa3ac, (CpuContext* ctx), (ctx));
 #endif
 #endif
 

@@ -237,7 +237,7 @@ PPC_NATIVE_OVERRIDE(800F1548, OS__DisableInterrupts_801a65ac, int32_t, (), ());
 PPC_NATIVE_OVERRIDE(800F155C, OS__EnableInterrupts_801a65c0, int32_t, (), ());
 PPC_NATIVE_OVERRIDE(800F1570, OS__RestoreInterrupts_801a65d4, int32_t, (int32_t level), (level));
 PPC_NATIVE_OVERRIDE(800F15B8, OS____InterruptInit_801a661c, uint32_t, (uint32_t r3, uint32_t r4, uint32_t r5, uint32_t r6, uint32_t r7, uint32_t r8), (r3, r4, r5, r6, r7, r8));
-PPC_NATIVE_OVERRIDE(817F0114, SetInterruptMask_801a66e0, uint32_t, (uint32_t mask, uint32_t enable), (mask, enable));
+PPC_NATIVE_OVERRIDE(817F0104, SetInterruptMask_801a66e0, uint32_t, (uint32_t mask, uint32_t enable), (mask, enable));
 PPC_NATIVE_OVERRIDE(800EC8A4, OS__ExceptionInit_801a00e0, uint32_t, (uint32_t r3, uint32_t r4, uint32_t r5, uint32_t r6, uint32_t r7, uint32_t r8, uint32_t r20), (r3, r4, r5, r6, r7, r8, r20));
 PPC_NATIVE_OVERRIDE(800D920C, EXIInit_80168fa0, uint32_t, (), ());
 REGISTER_NATIVE_FUNCTION(0x800F1594, __OSSetInterruptHandler_801a65f8_hle);
@@ -443,7 +443,7 @@ extern "C" uint32_t OSSetPowerCallback_801ab75c(CpuContext* ctx)
 }
 
 // Register the function
-PPC_NATIVE_OVERRIDE(817F0118, OSSetPowerCallback_801ab75c, uint32_t, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE(817F0108, OSSetPowerCallback_801ab75c, uint32_t, (CpuContext* ctx), (ctx));
 
 PPC_NATIVE_OVERRIDE(800D81D4, EXIImm_80167f68, uint32_t, (uint32_t channel, uint32_t buffer, uint32_t length, uint32_t type, uint32_t callback), (channel, buffer, length, type, callback));
 PPC_NATIVE_OVERRIDE(800D84F4, EXIDma_80168288, uint32_t, (uint32_t channel, uint32_t buffer, uint32_t length, uint32_t type, uint32_t callback), (channel, buffer, length, type, callback));

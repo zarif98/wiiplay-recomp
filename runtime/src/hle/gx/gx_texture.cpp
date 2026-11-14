@@ -4,6 +4,8 @@ extern "C" unsigned g_gameAudit[8];
 #include <map>
 // gx_texture.cpp - Texture Object and TLUT Functions
 #include "gx_internal.h"
+#include <atomic>
+extern std::atomic<bool> g_pendingTexInvalidate;
 #include "runtime_log.h"
 
 #include <algorithm>
@@ -395,9 +397,8 @@ extern "C" void GX__InitTexObjTlut_80170b64(uint32_t oa, uint32_t tl) {
     } catch (...) {
     }
 }
-#if 0 /* WARIO-TODO: falta la direccion de GXInitTexObjTlut (base 8028EDA0) */
-PPC_NATIVE_OVERRIDE_VOID(817F0074, GX__InitTexObjTlut_80170b64, (uint32_t oa, uint32_t tl), (oa, tl));
-#endif
+/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+PPC_NATIVE_OVERRIDE_VOID(800E0B48, GX__InitTexObjTlut_80170b64, (uint32_t oa, uint32_t tl), (oa, tl));
 
 // GXInitTexObjFilter - sets mag/min filter modes
 extern "C" void GX__InitTexObjFilter_80170b6c(uint32_t oa, uint32_t minFilter, uint32_t magFilter) {
@@ -425,9 +426,8 @@ extern "C" void GX__InitTexObjFilter_80170b6c(uint32_t oa, uint32_t minFilter, u
                            (GXAnisotropy)meta.maxAniso);
     }
 }
-#if 0 /* WARIO-TODO: falta la direccion de GXInitTexObjFilter (base 8028EDA8) */
-PPC_NATIVE_OVERRIDE_VOID(817F0078, GX__InitTexObjFilter_80170b6c, (uint32_t oa, uint32_t minFilter, uint32_t magFilter), (oa, minFilter, magFilter));
-#endif
+/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+PPC_NATIVE_OVERRIDE_VOID(800E0B50, GX__InitTexObjFilter_80170b6c, (uint32_t oa, uint32_t minFilter, uint32_t magFilter), (oa, minFilter, magFilter));
 
 // GXInitTexObjLODBias - sets LOD bias value
 extern "C" void GX__InitTexObjLODBias_80170b94(uint32_t oa, float bias) {
@@ -460,7 +460,7 @@ extern "C" void GX__InitTexObjLODBias_80170b94(uint32_t oa, float bias) {
 #if 0  // NSMBW: GXInitTexObjLODBias is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 80170B94) */
-PPC_NATIVE_OVERRIDE_VOID(817F007C, GX__InitTexObjLODBias_80170b94, (uint32_t oa, float bias), (oa, bias));
+PPC_NATIVE_OVERRIDE_VOID(817F0074, GX__InitTexObjLODBias_80170b94, (uint32_t oa, float bias), (oa, bias));
 #endif
 #endif
 #endif
@@ -481,7 +481,7 @@ extern "C" void GX__InitTexObjUserData_80170be8(uint32_t oa, uint32_t userData) 
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801C7160) */
-PPC_NATIVE_OVERRIDE_VOID(817F0080, GX__InitTexObjUserData_80170be8,
+PPC_NATIVE_OVERRIDE_VOID(817F0078, GX__InitTexObjUserData_80170be8,
               (uint32_t oa, uint32_t userData), (oa, userData));
 #endif
 #endif
@@ -625,6 +625,14 @@ extern "C" void GX__LoadTexObj_80170f2c(uint32_t oa, uint32_t tid) {
     static uint32_t s_invalidDataLogCount = 0;
     std::lock_guard<std::mutex> guard(g_texObjMutex);
 
+    // WII PLAY: aurora re-checks cached texture uploads only after GXInvalidateTexAll, and Tanks! never
+    // calls it. A level that loads (or decompresses) textures into memory used before kept serving the
+    // old or half-written upload (striped/noisy block tops). Invalidate once after any guest write;
+    // unchanged textures are re-proved by their write generation, changed ones are re-hashed.
+    if (g_pendingTexInvalidate.exchange(false, std::memory_order_relaxed)) {
+        GXInvalidateTexAll();
+    }
+
     if (tid >= g_boundTexMaps.size()) {
         if (s_invalidTidLogCount < 128) {
             ++g_gameAudit[3];
@@ -746,7 +754,11 @@ extern "C" void GX__LoadTexObj_80170f2c(uint32_t oa, uint32_t tid) {
     const auto metaIt = g_TexObjMeta.find(oa);
     if (!needsInit && metaIt != g_TexObjMeta.end()) {
         const TexObjMeta& cached = metaIt->second;
-        if (cached.width != meta.width || cached.height != meta.height || cached.format != meta.format ||
+        // WII PLAY: compare the data address too. NW4R builds texture objects on the stack, so one guest
+        // address carries different textures of the same size and format (Tanks!' IA8 64x64 block tops);
+        // without this the host twin kept the previous texture's data (striped/noisy blocks).
+        if (cached.dataAddr != meta.dataAddr ||
+            cached.width != meta.width || cached.height != meta.height || cached.format != meta.format ||
             cached.wrapS != meta.wrapS || cached.wrapT != meta.wrapT || cached.mipmap != meta.mipmap ||
             cached.minFilter != meta.minFilter || cached.magFilter != meta.magFilter ||
             cached.minLod != meta.minLod || cached.maxLod != meta.maxLod ||
@@ -870,11 +882,8 @@ extern "C" void GX__GetTexObjAll_80170bf8(uint32_t oa, uint32_t dp, uint32_t wp,
     }
     if (dp) Memory::Write32(dp, meta.dataAddr); if (wp) Memory::Write16(wp, meta.width); if (hp) Memory::Write16(hp, meta.height); if (fp) Memory::Write32(fp, meta.format); if (wsp) Memory::Write32(wsp, meta.wrapS); if (wtp) Memory::Write32(wtp, meta.wrapT); if (mp) Memory::Write8(mp, meta.mipmap ? 1 : 0);
 }
-#if 0
-#if 0 /* WARIO-TODO: falta la direccion de ? (base 801C7180) */
-PPC_NATIVE_OVERRIDE_VOID(817F0084, GX__GetTexObjAll_80170bf8, (uint32_t oa, uint32_t dp, uint32_t wp, uint32_t hp, uint32_t fp, uint32_t wsp, uint32_t wtp, uint32_t mp), (oa, dp, wp, hp, fp, wsp, wtp, mp));
-#endif
-#endif
+// WII PLAY: enabled (the function exists in Wii Play; it was off only for other games).
+PPC_NATIVE_OVERRIDE_VOID(800E0B78, GX__GetTexObjAll_80170bf8, (uint32_t oa, uint32_t dp, uint32_t wp, uint32_t hp, uint32_t fp, uint32_t wsp, uint32_t wtp, uint32_t mp), (oa, dp, wp, hp, fp, wsp, wtp, mp));
 
 extern "C" void GX__GetTexObjLODAll_80170cbc(uint32_t oa, uint32_t mifp, uint32_t mafp, uint32_t milp, uint32_t malp, uint32_t lbp, uint32_t bcp, uint32_t elp, uint32_t map) {
     std::lock_guard<std::mutex> guard(g_texObjMutex);
@@ -889,11 +898,8 @@ extern "C" void GX__GetTexObjLODAll_80170cbc(uint32_t oa, uint32_t mifp, uint32_
     }
     if (mifp) Memory::Write32(mifp, meta.minFilter); if (mafp) Memory::Write32(mafp, meta.magFilter); if (milp) Memory::WriteFloat32(milp, meta.minLod); if (malp) Memory::WriteFloat32(malp, meta.maxLod); if (lbp) Memory::WriteFloat32(lbp, meta.lodBias); if (bcp) Memory::Write8(bcp, meta.biasClamp ? 1 : 0); if (elp) Memory::Write8(elp, meta.edgeLod ? 1 : 0); if (map) Memory::Write32(map, meta.maxAniso);
 }
-#if 0
-#if 0 /* WARIO-TODO: falta la direccion de fn_801C7260 (base 801C7260) */
-PPC_NATIVE_OVERRIDE_VOID(817F0088, GX__GetTexObjLODAll_80170cbc, (uint32_t oa, uint32_t mifp, uint32_t mafp, uint32_t milp, uint32_t malp, uint32_t lbp, uint32_t bcp, uint32_t elp, uint32_t map), (oa, mifp, mafp, milp, malp, lbp, bcp, elp, map));
-#endif
-#endif
+// WII PLAY: enabled (the function exists in Wii Play; it was off only for other games).
+PPC_NATIVE_OVERRIDE_VOID(800E0C30, GX__GetTexObjLODAll_80170cbc, (uint32_t oa, uint32_t mifp, uint32_t mafp, uint32_t milp, uint32_t malp, uint32_t lbp, uint32_t bcp, uint32_t elp, uint32_t map), (oa, mifp, mafp, milp, malp, lbp, bcp, elp, map));
 
 // ============================================================================
 // TLUT (Texture Lookup Table)
@@ -932,15 +938,13 @@ extern "C" void GX__InvalidateTexAll_80171110() {
 PPC_NATIVE_OVERRIDE_VOID(800E1064, GX__InvalidateTexAll_80171110, (), ());
 
 extern "C" void GX__SetTexCoordScaleManually_80171180(uint32_t c, uint32_t en, uint32_t ss, uint32_t ts) { GXSetTexCoordScaleManually((GXTexCoordID)c, (GXBool)en, (u16)ss, (u16)ts); try{ uint32_t gd=Memory::Read32(kGXDataPtrAddr); if(gd){ Memory::Write32(gd+0x5E4u, (Memory::Read32(gd+0x5E4u)&~(1u<<c))|((en&1u)<<c)); if(en){ uint32_t sa=gd+0x108u+c*4u, ta=gd+0x128u+c*4u; Memory::Write32(sa, (Memory::Read32(sa)&0xFFFF0000u)|((ss-1)&0xFFFFu)); Memory::Write32(ta, (Memory::Read32(ta)&0xFFFF0000u)|((ts-1)&0xFFFFu)); Memory::Write16(gd+2, 0); } } }catch(...){} }
-#if 0
-/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+// WII PLAY: enabled (the function exists in Wii Play; it was off only for other games).
 PPC_NATIVE_OVERRIDE_VOID(800E10D4, GX__SetTexCoordScaleManually_80171180, (uint32_t c, uint32_t en, uint32_t ss, uint32_t ts), (c, en, ss, ts));
-#endif
 
 extern "C" void GX__SetTexCoordBias_801711fc(uint32_t c, uint32_t se, uint32_t te) { GXSetTexCoordBias((GXTexCoordID)c, (GXBool)se, (GXBool)te); try{ uint32_t gd=Memory::Read32(kGXDataPtrAddr); if(gd){ uint32_t sa=gd+0x108u+c*4u, ta=gd+0x128u+c*4u; Memory::Write32(sa, (Memory::Read32(sa)&0xFFFEFFFFu)|((se&1u)<<16)); Memory::Write32(ta, (Memory::Read32(ta)&0xFFFEFFFFu)|((te&1u)<<16)); if(Memory::Read32(gd+0x5E4u)&(1u<<c)) Memory::Write16(gd+2, 0); } }catch(...){} }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801C77D0) */
-PPC_NATIVE_OVERRIDE_VOID(817F008C, GX__SetTexCoordBias_801711fc, (uint32_t c, uint32_t se, uint32_t te), (c, se, te));
+PPC_NATIVE_OVERRIDE_VOID(817F007C, GX__SetTexCoordBias_801711fc, (uint32_t c, uint32_t se, uint32_t te), (c, se, te));
 #endif
 #endif
 
@@ -960,5 +964,5 @@ extern "C" void GX__InitTexObjData_GAME(uint32_t oa, uint32_t da) {
     }
 }
 #if 0 /* WARIO-TODO: falta la direccion de GXInitTexObjData (base 8028ED7C) */
-PPC_NATIVE_OVERRIDE_VOID(817F0090, GX__InitTexObjData_GAME, (uint32_t oa, uint32_t da), (oa, da));
+PPC_NATIVE_OVERRIDE_VOID(817F0080, GX__InitTexObjData_GAME, (uint32_t oa, uint32_t da), (oa, da));
 #endif

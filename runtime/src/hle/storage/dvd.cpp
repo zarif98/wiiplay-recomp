@@ -1325,7 +1325,7 @@ PPC_NATIVE_OVERRIDE(8013F0B8, DVDLowUnencryptedRead_80165708, int32_t, (uint32_t
 extern "C" int32_t DVDCheckDevice_801643FC() { return 1; } // Ready
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801D0980) */
-PPC_NATIVE_OVERRIDE(817F0148, DVDCheckDevice_801643FC, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F0138, DVDCheckDevice_801643FC, int32_t, (), ());
 #endif
 #endif
 

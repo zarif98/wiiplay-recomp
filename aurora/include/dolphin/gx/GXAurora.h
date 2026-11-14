@@ -107,6 +107,7 @@ void AuroraSetTexturePatches(bool enabled);
 void AuroraTakeGxStats(uint64_t* processNanos, uint64_t* lockNanos, uint64_t* draws);
 // Time spent processing GX commands since start (NSMBW_LOG_FPS only; else 0).
 uint64_t AuroraGxProcessNanosTotal(void);
+uint64_t AuroraTextureConvertNanosTotal(void);
 // NSMBW: GXCopyTex calls and the new GPU textures they needed, since the last call (profiling).
 void AuroraTakeCopyStats(uint64_t* copies, uint64_t* creates);
 

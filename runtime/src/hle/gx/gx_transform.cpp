@@ -112,12 +112,8 @@ extern "C" void GX__SetZScaleOffset_80173400(float s, float o) {
         }
     } catch (...) {}
 }
-#if 0  // NSMBW: GXSetZScaleOffset is not linked into NSMBW (was MKW-only)
-#if 0
-/* WII PLAY: re-enabled (resolved by retarget_runtime.py) */
+// WII PLAY: enabled (the function exists in Wii Play; it was off only for other games).
 PPC_NATIVE_OVERRIDE_VOID(800E32F8, GX__SetZScaleOffset_80173400, (float s, float o), (s, o));
-#endif
-#endif
 
 extern "C" void GX__SetScissorBoxOffset_801734e0(int32_t xo, int32_t yo) {
     GXSetScissorBoxOffset(xo, yo);

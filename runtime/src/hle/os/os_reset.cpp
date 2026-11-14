@@ -136,7 +136,7 @@ extern "C" uint32_t OSResetSystem()
     return 0; // unreachable, but keeps the signature consistent with callers
 }
 
-PPC_NATIVE_OVERRIDE(817F0120, OSResetSystem, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F0110, OSResetSystem, uint32_t, (), ());
 
 // WII PLAY: "return to the Wii Menu" and "shut down" end the app the same way. The SDK versions spin in
 // __DVDPrepareReset waiting for a drive that the HLE never runs (the hang after Wii Play's Mii error).

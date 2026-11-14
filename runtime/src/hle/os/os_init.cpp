@@ -20,7 +20,7 @@
 
 extern "C" void func_800F3B4C(CpuContext* ctx);
 #if 0  // NSMBW: MKW StaticR.rel prolog
-extern "C" void func_817F00FC(CpuContext* ctx);
+extern "C" void func_817F00EC(CpuContext* ctx);
 #endif
 
 extern "C" void OSInitAlarm_RecompModLateInit_801a961c(CpuContext* ctx) {
@@ -32,14 +32,14 @@ REGISTER_NATIVE_FUNCTION_AS(0x800F3B4C, OSInitAlarm_RecompModLateInit_801a961c, 
 #if 0  // NSMBW: MKW StaticR.rel prolog wrapper (Retro Rewind mod init); NSMBW has no StaticR
 extern "C" void StaticRProlog_RecompModInit_8055531c(CpuContext* ctx) {
     RecompMod::RunMemoryInitializers();
-    func_817F00FC(ctx);
+    func_817F00EC(ctx);
     RecompMod::RunPostRelInitializers();
 }
 #endif
 
 #if 0  // NSMBW: StaticRProlog_RecompModInit is not linked into NSMBW (was MKW-only)
 #if 0
-REGISTER_NATIVE_FUNCTION_AS(0x817F00FC, StaticRProlog_RecompModInit_8055531c, "StaticRProlog_RecompModInit_8055531c");
+REGISTER_NATIVE_FUNCTION_AS(0x817F00EC, StaticRProlog_RecompModInit_8055531c, "StaticRProlog_RecompModInit_8055531c");
 #endif
 #endif
 
@@ -113,7 +113,7 @@ extern "C" uint32_t BTM_IsDeviceUp_HLE_8013a300(CpuContext* ctx)
     return 1;
 }
 
-PPC_NATIVE_OVERRIDE_VOID(817F0100, GKI_delay_HLE_801301b4, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F00F0, GKI_delay_HLE_801301b4, (CpuContext* ctx), (ctx));
 PPC_NATIVE_OVERRIDE(80116A80, BTM_IsDeviceUp_HLE_8013a300, uint32_t, (CpuContext* ctx), (ctx));
 
 // Serial Interface (SI) - GameCube controller ports; stubbed since we don't emulate the MMIO.
@@ -263,7 +263,7 @@ PPC_NATIVE_OVERRIDE_VOID(800063C8,__init_hardware_80006348, (), ());
 
 PPC_SPR_STUB_BODY(PPCMfhid0_8012e574, "PPCMfhid0 called (stubbed) - Move From HID0")
 #if 0 /* WARIO-TODO: falta la direccion de PPCMfhid0 (base 8026B304) */
-PPC_NATIVE_OVERRIDE_VOID(817F0104, PPCMfhid0_8012e574, (), ());
+PPC_NATIVE_OVERRIDE_VOID(817F00F4, PPCMfhid0_8012e574, (), ());
 #endif
 
 PPC_SPR_STUB_BODY(PPCMthid0_8012e57c, "PPCMthid0 called (stubbed) - Move To HID0")
@@ -335,16 +335,16 @@ extern "C" void PPCMthid2_8012e638(CpuContext* ctx)
         RT_LOG(RT_TAG_OS) << "PPCMthid2 set HID2=0x" << std::hex << cpu->hid2 << std::dec << std::endl;
     }
 }
-PPC_NATIVE_OVERRIDE_VOID(817F0108, PPCMthid2_8012e638, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F00F8, PPCMthid2_8012e638, (CpuContext* ctx), (ctx));
 
 PPC_SPR_STUB_BODY(PPCMfwpar_8012e640,
                   "PPCMfwpar called (stubbed) - Move From Write Pipe Address Register")
-PPC_NATIVE_OVERRIDE_VOID(817F010C, PPCMfwpar_8012e640, (), ());
+PPC_NATIVE_OVERRIDE_VOID(817F00FC, PPCMfwpar_8012e640, (), ());
 
 PPC_SPR_STUB_BODY(PPCMtwpar_8012e64c,
                   "PPCMtwpar called (stubbed) - Move To Write Pipe Address Register")
 #if 0 /* WARIO-TODO: falta la direccion de PPCMtwpar (base 8026B3DC) */
-PPC_NATIVE_OVERRIDE_VOID(817F0110, PPCMtwpar_8012e64c, (), ());
+PPC_NATIVE_OVERRIDE_VOID(817F0100, PPCMtwpar_8012e64c, (), ());
 #endif
 
 PPC_SPR_STUB_BODY(PPCDisableSpeculation_8012e654, "PPCDisableSpeculation called (stubbed)")

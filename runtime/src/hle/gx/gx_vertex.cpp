@@ -331,14 +331,14 @@ PPC_NATIVE_OVERRIDE_VOID(800DF09C, GX__Begin_8016f0f0, (uint32_t t, uint32_t vf,
 extern "C" void GX__End_80044b30() { g_hleGxState.inBegin=false; GXEnd(); }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 802A35B0) */
-PPC_NATIVE_OVERRIDE_VOID(817F0094, GX__End_80044b30, (), ());
+PPC_NATIVE_OVERRIDE_VOID(817F0084, GX__End_80044b30, (), ());
 #endif  // NSMBW out-of-line GXEnd copy #1 (blr)
 #endif
 
 extern "C" void GX__End_80048c30() { GX__End_80044b30(); }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 802A7C90) */
-PPC_NATIVE_OVERRIDE_VOID(817F0098, GX__End_80048c30, (), ());
+PPC_NATIVE_OVERRIDE_VOID(817F0088, GX__End_80048c30, (), ());
 #endif  // NSMBW out-of-line GXEnd copy #2 (blr)
 #endif
 
@@ -446,5 +446,5 @@ extern "C" void GX__DrawSphere_80172a30(uint32_t numMajor, uint32_t numMinor) {
     }
 }
 #if 0 /* WARIO-TODO: falta la direccion de GXDrawSphere (base 80290ADC) */
-PPC_NATIVE_OVERRIDE_VOID(817F009C, GX__DrawSphere_80172a30, (uint32_t numMajor, uint32_t numMinor), (numMajor, numMinor));
+PPC_NATIVE_OVERRIDE_VOID(817F008C, GX__DrawSphere_80172a30, (uint32_t numMajor, uint32_t numMinor), (numMajor, numMinor));
 #endif

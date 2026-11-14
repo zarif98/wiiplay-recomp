@@ -62,3 +62,7 @@
 800ddb50 GXGetVtxDescv             # 144 bytes, before GXClearVtxDesc
 800ddff8 GXGetVtxAttrFmt           # after __GXSetVAT
 800de264 GXGetVtxAttrFmtv          # before GXSetArray
+800e0b48 GXInitTexObjTlut          # stw r4, 0x18(r3) (tlutName)
+800e0b50 GXInitTexObjFilter        # rmw of mode0 (+0)
+800e0b78 GXGetTexObjAll            # reads image/w/h/fmt/wrap/mip (+0,+8,+12,+20,+31); NW4R copies texobjs through it
+800e0c30 GXGetTexObjLODAll         # reads mode0/mode1 (+0,+4)

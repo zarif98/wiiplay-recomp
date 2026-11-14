@@ -79,7 +79,7 @@ extern "C" uint32_t SCGetEuRgb60Mode_HLE()
 
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801DD2B0) */
-PPC_NATIVE_OVERRIDE(817F0130, SCGetEuRgb60Mode_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F0120, SCGetEuRgb60Mode_HLE, uint32_t, (), ());
 #endif
 #endif
 
@@ -112,7 +112,7 @@ extern "C" uint32_t SCGetProductCode_HLE()
 #if 0  // NSMBW: SCGetProductCode is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B2424) */
-PPC_NATIVE_OVERRIDE(817F0134, SCGetProductCode_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F0124, SCGetProductCode_HLE, uint32_t, (), ());
 #endif
 #endif
 #endif
@@ -128,7 +128,7 @@ extern "C" uint32_t SCGetProductSN_HLE(uint32_t serialAddress)
 #if 0  // NSMBW: SCGetProductSN is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801B2460) */
-PPC_NATIVE_OVERRIDE(817F0138, SCGetProductSN_HLE, uint32_t, (uint32_t serialAddress), (serialAddress));
+PPC_NATIVE_OVERRIDE(817F0128, SCGetProductSN_HLE, uint32_t, (uint32_t serialAddress), (serialAddress));
 #endif
 #endif
 #endif
@@ -141,7 +141,7 @@ extern "C" uint32_t SCGetProductGameRegion_HLE()
 
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801DD940) */
-PPC_NATIVE_OVERRIDE(817F013C, SCGetProductGameRegion_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F012C, SCGetProductGameRegion_HLE, uint32_t, (), ());
 #endif
 #endif
 
@@ -160,7 +160,7 @@ extern "C" uint32_t OS__IsTitleInstalled(uint32_t titleIdHi, uint32_t titleIdLo)
 #if 0  // NSMBW: OSIsTitleInstalled is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AE4A0) */
-PPC_NATIVE_OVERRIDE(817F0140, OS__IsTitleInstalled, uint32_t, (uint32_t titleIdHi, uint32_t titleIdLo), (titleIdHi, titleIdLo));
+PPC_NATIVE_OVERRIDE(817F0130, OS__IsTitleInstalled, uint32_t, (uint32_t titleIdHi, uint32_t titleIdLo), (titleIdHi, titleIdLo));
 #endif
 #endif
 #endif
@@ -181,7 +181,7 @@ extern "C" uint32_t OS__CheckInstall(uint32_t requiredBlocks, uint32_t titleIdHi
 #if 0  // NSMBW: OSCheckInstall is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801AD1D4) */
-PPC_NATIVE_OVERRIDE(817F0144, OS__CheckInstall, uint32_t, (uint32_t requiredBlocks, uint32_t titleIdHi, uint32_t titleIdLo, uint32_t outFlagsPtr), (requiredBlocks, titleIdHi, titleIdLo, outFlagsPtr));
+PPC_NATIVE_OVERRIDE(817F0134, OS__CheckInstall, uint32_t, (uint32_t requiredBlocks, uint32_t titleIdHi, uint32_t titleIdLo, uint32_t outFlagsPtr), (requiredBlocks, titleIdHi, titleIdLo, outFlagsPtr));
 #endif
 #endif
 #endif

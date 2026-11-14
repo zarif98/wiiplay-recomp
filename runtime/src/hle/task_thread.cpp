@@ -211,7 +211,7 @@ extern "C" void TaskThread_run_HLE_80242d7c(CpuContext* ctx) {
 #if 0  // NSMBW: MKW EGG::TaskThread / THP movie player; NSMBW has neither
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 80242D7C) */
-PPC_NATIVE_OVERRIDE_VOID(817F01E8, TaskThread_run_HLE_80242d7c, (CpuContext* ctx), (ctx));
+PPC_NATIVE_OVERRIDE_VOID(817F01D8, TaskThread_run_HLE_80242d7c, (CpuContext* ctx), (ctx));
 #endif
 #endif
 #endif

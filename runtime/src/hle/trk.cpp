@@ -14,7 +14,7 @@ extern "C" uint32_t Stub_8002001C(uint32_t ctx, int code)
 #if 0  // NSMBW: Stub is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 8002001C) */
-PPC_NATIVE_OVERRIDE(817F01EC, Stub_8002001C, uint32_t, (uint32_t ctx, int code), (ctx, code));
+PPC_NATIVE_OVERRIDE(817F01DC, Stub_8002001C, uint32_t, (uint32_t ctx, int code), (ctx, code));
 #endif
 #endif
 #endif

@@ -61,19 +61,19 @@ extern "C" int32_t WPADGetStatus_HLE()
     // Reading r3 here would leak a caller's stale register value into the result.
     return g_state.contract.GetLibraryStatus();
 }
-PPC_NATIVE_OVERRIDE(817F00C0, WPADGetStatus_HLE, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00B0, WPADGetStatus_HLE, int32_t, (), ());
 
 extern "C" uint32_t WPADGetDpdSensitivity_HLE()
 {
     return static_cast<uint32_t>(g_state.dpdSensitivity);
 }
-PPC_NATIVE_OVERRIDE(817F00C4, WPADGetDpdSensitivity_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00B4, WPADGetDpdSensitivity_HLE, uint32_t, (), ());
 
 extern "C" uint32_t WPADIsDpdEnabled_HLE()
 {
     return 1;
 }
-PPC_NATIVE_OVERRIDE(817F00C8, WPADIsDpdEnabled_HLE, uint32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00B8, WPADIsDpdEnabled_HLE, uint32_t, (), ());
 
 extern "C" int32_t WPADInitSub_HLE()
 {
@@ -86,7 +86,7 @@ extern "C" int32_t WPADInitSub_HLE()
 #if 0  // NSMBW: WPADInitSub is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801BF3B4) */
-PPC_NATIVE_OVERRIDE(817F00CC, WPADInitSub_HLE, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00BC, WPADInitSub_HLE, int32_t, (), ());
 #endif
 #endif
 #endif
@@ -110,7 +110,7 @@ extern "C" int32_t WPADGetDataFormat_HLE(uint32_t chan)
 {
     return g_state.contract.GetDataFormat(chan);
 }
-PPC_NATIVE_OVERRIDE(817F00D0, WPADGetDataFormat_HLE, int32_t, (uint32_t chan), (chan));
+PPC_NATIVE_OVERRIDE(817F00C0, WPADGetDataFormat_HLE, int32_t, (uint32_t chan), (chan));
 
 // WPADSetDataFormat: records the per-channel data format the game asked for.
 extern "C" int32_t WPADSetDataFormat_HLE(uint32_t chan, int32_t format)
@@ -185,7 +185,7 @@ extern "C" int32_t WPADGetInfoAsync_HLE(uint32_t chan, uint32_t infoPtr, uint32_
     (void)infoPtr;
     return CompleteWpadRequest(chan, callback, WpadContract::kErrorNoController);
 }
-PPC_NATIVE_OVERRIDE(817F00D4, WPADGetInfoAsync_HLE, int32_t,
+PPC_NATIVE_OVERRIDE(817F00C4, WPADGetInfoAsync_HLE, int32_t,
          (uint32_t chan, uint32_t infoPtr, uint32_t callback), (chan, infoPtr, callback));
 
 extern "C" int32_t WPADControlLed_HLE(uint32_t chan, uint32_t ledMask, uint32_t callback)
@@ -198,7 +198,7 @@ extern "C" int32_t WPADControlLed_HLE(uint32_t chan, uint32_t ledMask, uint32_t 
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801E1630) */
-PPC_NATIVE_OVERRIDE(817F00D8, WPADControlLed_HLE, int32_t,
+PPC_NATIVE_OVERRIDE(817F00C8, WPADControlLed_HLE, int32_t,
          (uint32_t chan, uint32_t ledMask, uint32_t callback), (chan, ledMask, callback));
 #endif
 #endif
@@ -214,14 +214,14 @@ extern "C" int32_t WPADStartSimpleSync_HLE()
 #if 0  // NSMBW: WPADStartSimpleSync is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801BF634) */
-PPC_NATIVE_OVERRIDE(817F00DC, WPADStartSimpleSync_HLE, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00CC, WPADStartSimpleSync_HLE, int32_t, (), ());
 #endif // WUDStartSyncSimple
 #endif
 #endif
 #if 0  // NSMBW: WPADStartSimpleSync is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801BF638) */
-PPC_NATIVE_OVERRIDE(817F00E0, WPADStartSimpleSync_HLE, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00D0, WPADStartSimpleSync_HLE, int32_t, (), ());
 #endif // WPADStartSimpleSync (HBM)
 #endif
 #endif
@@ -239,7 +239,7 @@ extern "C" int32_t WPADStopSimpleSync_HLE()
     }
     return 1;
 }
-PPC_NATIVE_OVERRIDE(817F00E4, WPADStopSimpleSync_HLE, int32_t, (), ());
+PPC_NATIVE_OVERRIDE(817F00D4, WPADStopSimpleSync_HLE, int32_t, (), ());
 
 extern "C" uint32_t WPADSetSyncDeviceCallback_HLE(uint32_t callback)
 {
@@ -250,7 +250,7 @@ extern "C" uint32_t WPADSetSyncDeviceCallback_HLE(uint32_t callback)
 #if 0  // NSMBW: WPADSetSyncDeviceCallback is not linked into NSMBW (was MKW-only)
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 801BF640) */
-PPC_NATIVE_OVERRIDE(817F00E8, WPADSetSyncDeviceCallback_HLE, uint32_t, (uint32_t callback), (callback));
+PPC_NATIVE_OVERRIDE(817F00D8, WPADSetSyncDeviceCallback_HLE, uint32_t, (uint32_t callback), (callback));
 #endif
 #endif
 #endif

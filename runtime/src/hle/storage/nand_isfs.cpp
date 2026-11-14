@@ -436,7 +436,7 @@ extern "C" void NAND_IOS_OpenBody_HLE_801938FC(CpuContext* ctx) {
 }
 #if 0  // NSMBW: NAND_IOS_OpenBody is not linked into NSMBW (was MKW-only)
 #if 0
-REGISTER_NATIVE_FUNCTION_AS(0x817F01DC, NAND_IOS_OpenBody_HLE_801938FC, "NAND_IOS_OpenBody_HLE_801938FC");
+REGISTER_NATIVE_FUNCTION_AS(0x817F01CC, NAND_IOS_OpenBody_HLE_801938FC, "NAND_IOS_OpenBody_HLE_801938FC");
 #endif
 #endif
 
@@ -535,7 +535,7 @@ extern "C" int32_t NAND_IOS_Seek_HLE(uint32_t fd, int32_t offset, int32_t whence
 }
 #if 0
 #if 0 /* WARIO-TODO: falta la direccion de ? (base 80225410) */
-PPC_NATIVE_OVERRIDE(817F01E0, NAND_IOS_Seek_HLE, int32_t, (uint32_t fd, int32_t offset, int32_t whence), (fd, offset, whence));
+PPC_NATIVE_OVERRIDE(817F01D0, NAND_IOS_Seek_HLE, int32_t, (uint32_t fd, int32_t offset, int32_t whence), (fd, offset, whence));
 #endif
 #endif
 
