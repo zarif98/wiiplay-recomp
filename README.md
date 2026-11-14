@@ -1,5 +1,7 @@
 # Wii Play — native recompilation
 
+[![build](https://github.com/zarif98/wiiplay-recomp/actions/workflows/build.yml/badge.svg)](https://github.com/zarif98/wiiplay-recomp/actions/workflows/build.yml)
+
 **Wii Play (USA, RHAE01) running natively on macOS**, statically recompiled from your own disc —
 no emulator. All nine games run, including **Tanks!**, with menus, Miis, audio, saves and
 keyboard/mouse controls.
@@ -23,7 +25,7 @@ Next goal: **4-player Tanks!** (the original supports at most two).
 | Audio | ✅ |
 | Graphics | ✅ mostly correct; occasional lighting oddities |
 | Controls | keyboard + mouse (pointer), optional keyboard player 2 |
-| Platforms | macOS on Apple Silicon (played). Windows x64 and Linux: build scripts included, not tested yet |
+| Platforms | macOS on Apple Silicon (played). Windows x64 and Linux compile in CI but are not play-tested yet |
 
 ## Requirements
 
