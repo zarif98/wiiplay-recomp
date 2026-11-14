@@ -1,4 +1,6 @@
-#include <execinfo.h>
+#if !defined(_WIN32)
+#include <execinfo.h>  // crash backtrace below (not available on Windows)
+#endif
 #include <cstdio>
 #include <cstdlib>
 // Guest thread lifecycle HLE (fiber-backed) plus the thread-list/priority-queue
@@ -100,11 +102,13 @@ void InsertThreadIntoQueueByPriority(uint32_t queuePtr, uint32_t threadPtr, int3
                                  ::Memory::Read32(n + kThreadQueueOffset));
                     n = ::Memory::Read32(n + kThreadNextOffset);
                 }
+#if !defined(_WIN32)
                 {
                     void* frames[80];
                     const int n = backtrace(frames, 80);
                     backtrace_symbols_fd(frames, n, 2);
                 }
+#endif
                 std::fflush(stderr);
                 std::abort();
             }

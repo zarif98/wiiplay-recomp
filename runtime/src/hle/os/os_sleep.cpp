@@ -1,4 +1,3 @@
-#include <execinfo.h>
 #include <cstdio>
 // OSSleepTicks / OSSleepThread parking plus the host-side sleep-timer table.
 
