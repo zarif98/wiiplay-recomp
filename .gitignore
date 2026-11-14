@@ -1,4 +1,5 @@
-# Never commit game data
+# Never commit game data. Directory rules are anchored to the repo root: an unanchored build/
+# also matched fw/translator/src/Translator.Core/Build on case-insensitive file systems.
 *.iso
 *.nkit.iso
 *.wbfs
@@ -7,13 +8,13 @@
 *.wia
 *.dol
 *.elf
-extracted/
-vendor/
-tools/
-disc/
-extracted/
-generated/
-build/
+/extracted/
+/vendor/
+/tools/
+/disc/
+/extracted/
+/generated/
+/build/
 
 # .NET build output
 bin/
