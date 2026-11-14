@@ -1,0 +1,64 @@
+# Names found by hand (address name  # evidence). Applied last by build_map.sh.
+800ec4a0 OSInit          # registers "<< RVL_SDK - OS"; called from __start, sets __ArenaLo 0x80453A40
+800e3d6c IPCGetBufferHi  # lwz r3, -0x6C70(r13); blr  — called first in ISFS_OpenLib
+800e3d74 IPCGetBufferLo  # lwz r3, -0x6C74(r13); blr
+800e3d7c IPCSetBufferLo  # stw r3, -0x6C74(r13); blr  — called before iosCreateHeap in ISFS_OpenLib
+800ee848 OSInitContext             # follows OSClearContext as in Wario; same size (0xBC)
+800ee904 OSDumpContext             # follows OSInitContext as in Wario
+800f5e38 __OSDefaultResetCallback  # __OSInitSTM stores it at r13-0x6B5C
+800f5e3c __OSDefaultPowerCallback  # __OSInitSTM stores it at r13-0x6B60
+800f3de0 OSGetCurrentThread       # lis r3,0x8000; lwz r3,0xE4(r3); blr — unique in the DOL
+800f1594 __OSSetInterruptHandler   # (id, handler) — called from __GXFifoInit/__GXPEInit
+800f3dd0 OSInitThreadQueue         # called with &FinishQueue in __GXPEInit
+800cc8a0 WPADInit                  # calls OSRegisterShutdownFunction + WUDInit (fn_800FFE6C); the version-string heuristic picked the wrong function
+800cd560 fn_800CD560               # NOT WPADInit (uses WPADiRetrieveChannel/WPADSetAutoSamplingBuf); was misnamed by name_sdk_inits.py
+800ffe6c WUDInit                   # sets BT trace levels, SCInit, periodic alarm
+80105960 __AXOutInitDSP            # builds the AX DSPTaskInfo @ 0x803C3B60, DSPInit + DSPAddTask
+80105a50 __AXOutInit               # AIInitDMA/AIRegisterDMACallback/AIStartDMA + __AXOutInitDSP
+800f1150 OSInitFont                # calls ReadFont -> __OSReadROM (IPL font over EXI); seen in main-thread backtrace
+80103058 AIGetDMABytesLeft         # lhz 0xCC00503A; Dolphin signature DB mislabels it __ARGetInterruptStatus
+# GX by SDK link order between Dolphin-signature anchors (sizes checked)
+800e1be0 GXSetTevColorIn           # GXTev.c: TevOp | ColorIn AlphaIn ColorOp AlphaOp | TevColor
+800e1c20 GXSetTevAlphaIn
+800e1c60 GXSetTevColorOp
+800e1cb8 GXSetTevAlphaOp
+800e1e30 GXSetTevKColorSel         # GXTev.c: TevKColor | KColorSel KAlphaSel SwapMode | SwapModeTable
+800e1e80 GXSetTevKAlphaSel
+800e1ed0 GXSetTevSwapMode
+800e0340 GXLoadLightObjIndx        # GXLight.c: LoadLightObjImm | Indx AmbColor MatColor NumChans | ChanCtrl
+800e0380 GXSetChanAmbColor
+800e0458 GXSetChanMatColor
+800e0530 GXSetNumChans
+800e21cc GXSetFog                  # GXPixel.c: NumTevStages | Fog InitFogAdjTable | FogRangeAdj
+800e23f8 GXInitFogAdjTable
+800e26cc GXSetColorUpdate          # GXPixel.c: BlendMode | ColorUpdate AlphaUpdate | ZMode | ZCompLoc | PixelFmt | Dither | DstAlpha
+800e26f8 GXSetAlphaUpdate
+800e2758 GXSetZCompLoc
+800e2830 GXSetDither
+800df2c0 GXSetLineWidth            # GXGeometry.c: __GXSendFlushPrim | LineWidth PointSize EnableTexOffsets | CullMode | GetCullMode | CoPlanar
+800df2f4 GXSetPointSize
+800df328 GXEnableTexOffsets
+800df38c GXGetCullMode
+800e1af4 __GXUpdateBPMask          # GXBump.c tail: TevDirect | UpdateBPMask(empty) SetIndirectMask FlushTextureState | (GXTev)
+800e1af8 __GXSetIndirectMask
+800e1b28 __GXFlushTextureState
+800e2d00 GXBeginDisplayList        # sets up DisplayListFifo @ 0x803A8220, saves gxData to +0x80, CPU fifo to +0x680
+800e2db0 GXEndDisplayList          # GXGetCPUFifo(&DisplayListFifo) ... GXSetCPUFifo(old @ +0x680)
+800deb1c GXPixModeSync             # GXMisc.c order: GXDrawDone | GXPixModeSync (36 bytes)
+800de9a8 GXSetDrawSync             # writes the PE token to the FIFO with interrupts off; called by EGG display (fn_800ABDE8)
+800c9b14 KPADRead                  # KPAD lib, 1816 bytes: WPADProbe/WPADGetAccGravityUnit, steps KPADStatus by 0x84
+800f2d98 OSShutdownSystem          # OSReset.c order; SCCheckStatus + __DVDPrepareReset + shutdown
+800f2eac OSReturnToMenu            # __VISetRGBModeImm + __DVDPrepareReset; called after Wii Play's Mii error
+8016801c RFLiIsWorking             # returns *(RFLManager @ r13-0x6690)+0x1B34; RFLInitRes spins on it
+800b20f8 __ptmf_scall              # lwz r0/r11/r12 from {delta, vtbl_off, func}; bctr
+800e3054 GXLoadPosMtxIndx          # GXTransform.c order after GXLoadPosMtxImm; writes CP 0x20 (LOAD_INDX_A)
+800e30d8 GXLoadNrmMtxIndx3x3       # after GXLoadNrmMtxImm; writes CP 0x28 (LOAD_INDX_B)
+800df3dc GXSetDispCopySrc          # GXFrameBuf.c: writes gxData+0x230 (BP 0x49/0x4A); before GXSetDispCopyDst
+800df41c GXSetTexCopySrc           # writes gxData+0x240; before GXSetTexCopyDst
+800de550 GXSetNumTexGens           # inserts count into gxData+0x254 low 4 bits, dirty |= 0x204
+800e3270 GXSetViewportJitter       # stores 4 viewport floats at gxData+0x544..; between __GXSetViewport and GXSetViewport
+800e32f8 GXSetZScaleOffset         # stores gxData+0x55C/0x560
+800dd99c GXGetVtxDesc              # GXAttr.c: after __GXCalculateVLim; 32 + 404 (switch) = 436 bytes as in Wario
+800ddb50 GXGetVtxDescv             # 144 bytes, before GXClearVtxDesc
+800ddff8 GXGetVtxAttrFmt           # after __GXSetVAT
+800de264 GXGetVtxAttrFmtv          # before GXSetArray

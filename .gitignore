@@ -1,0 +1,20 @@
+# Never commit game data
+*.iso
+*.nkit.iso
+*.wbfs
+*.rvz
+*.gcz
+*.wia
+*.dol
+*.elf
+extracted/
+vendor/
+tools/
+disc/
+extracted/
+generated/
+build/
+
+# .NET build output
+bin/
+obj/

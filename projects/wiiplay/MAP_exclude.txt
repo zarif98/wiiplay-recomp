@@ -1,0 +1,2 @@
+# Addresses that are data, not code (applied last by build_map.sh)
+80004188 TRK banner string "Metrowerks Target Resident Kernel for PowerPC"
