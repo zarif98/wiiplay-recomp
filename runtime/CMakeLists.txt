@@ -522,7 +522,9 @@ if(MKW_BUILD_PRODUCTS)
     set(MKW_RUNTIME_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}")
     include("${CMAKE_CURRENT_LIST_DIR}/cmake/PublicProducts.cmake")
 else()
-    if(MKW_PLATFORM_MACOS)
+    # WII PLAY: the compile-only audit runs on every platform (CI builds it on macOS, Linux and
+    # Windows without a disc). It was macOS-only upstream.
+    if(TRUE)
         # Compile-only audit of native runtime sources. It deliberately avoids
         # translated products until their host dependencies are portable.
         # These sources depend on generated/RuntimeConfig.h, which is emitted for
@@ -532,23 +534,25 @@ else()
         list(REMOVE_ITEM MKW_MACOS_NATIVE_AUDIT_SOURCES
             "${CMAKE_CURRENT_LIST_DIR}/src/abi_bridge.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/src/hle/os/os_alarm.cpp")
-        add_library(mkw_macos_native_compile OBJECT ${MKW_MACOS_NATIVE_AUDIT_SOURCES})
-        target_include_directories(mkw_macos_native_compile PRIVATE
+        add_library(mkw_native_compile OBJECT ${MKW_MACOS_NATIVE_AUDIT_SOURCES})
+        target_include_directories(mkw_native_compile PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/include" "${CMAKE_CURRENT_LIST_DIR}/src"
             "${CMAKE_CURRENT_LIST_DIR}/.." "${CMAKE_CURRENT_LIST_DIR}/../aurora/include")
-        target_compile_features(mkw_macos_native_compile PRIVATE cxx_std_20)
-        target_compile_definitions(mkw_macos_native_compile PRIVATE SDL_MAIN_HANDLED TARGET_PC)
-        target_link_libraries(mkw_macos_native_compile PRIVATE
+        target_compile_features(mkw_native_compile PRIVATE cxx_std_20)
+        target_compile_definitions(mkw_native_compile PRIVATE SDL_MAIN_HANDLED TARGET_PC)
+        target_link_libraries(mkw_native_compile PRIVATE
             aurora::gx aurora::pad aurora::si aurora::vi aurora::mtx
             mkw::pugixml mkw::toml11 mkw::cryptopp mkw::mbedtls)
-        if(MKW_PLATFORM_MACOS_X86_64)
-            target_link_libraries(mkw_macos_native_compile PRIVATE mkw::libco)
+        if(MKW_PLATFORM_LINUX OR MKW_PLATFORM_MACOS_X86_64)
+            target_link_libraries(mkw_native_compile PRIVATE mkw::libco)
+        endif()
+        if(NOT MKW_PLATFORM_MACOS_ARM64 AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64|X86_64)$")
             # Keep this compile-only audit on the same Haswell-era x86-64-v3
             # baseline as the translated product. PPC paired FMA helpers use
             # FMA intrinsics and intentionally cannot compile for plain x86-64.
-            target_compile_options(mkw_macos_native_compile PRIVATE -march=x86-64-v3)
+            target_compile_options(mkw_native_compile PRIVATE -march=x86-64-v3)
         endif()
-        set_target_properties(mkw_macos_native_compile PROPERTIES UNITY_BUILD OFF)
+        set_target_properties(mkw_native_compile PROPERTIES UNITY_BUILD OFF)
     endif()
     add_custom_target(mkw_platform_paths_check DEPENDS mkw_platform)
     message(STATUS "Translated product targets disabled (MKW_BUILD_PRODUCTS=OFF)")

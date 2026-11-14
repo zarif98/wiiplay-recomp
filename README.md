@@ -23,26 +23,44 @@ Next goal: **4-player Tanks!** (the original supports at most two).
 | Audio | ✅ |
 | Graphics | ✅ mostly correct; occasional lighting oddities |
 | Controls | keyboard + mouse (pointer), optional keyboard player 2 |
-| Platforms | macOS on Apple Silicon (tested). Linux/Windows untested |
+| Platforms | macOS on Apple Silicon (played). Windows x64 and Linux: build scripts included, not tested yet |
 
 ## Requirements
 
-- Apple Silicon Mac, macOS 14+, Xcode Command Line Tools, [Homebrew](https://brew.sh)
 - Your own **Wii Play (USA) RHAE01** disc image (ISO, NKit ISO, WBFS, RVZ…)
 - Mii data from the Wii system software (see [Mii data](#mii-data)) — [Dolphin](https://dolphin-emu.org) can download it from Nintendo
+- Python 3 and about 6 GB of free disk space for the build
+- **macOS:** Apple Silicon or Intel, macOS 14+, Xcode Command Line Tools, [Homebrew](https://brew.sh)
+- **Windows:** 64-bit Windows 10/11 and [Python 3](https://www.python.org/downloads/). Everything else
+  (LLVM-MinGW, CMake, Ninja, .NET 8) is downloaded into `tools\` by the build script
+- **Linux:** x86_64 or aarch64, clang, CMake, Ninja, the .NET 8 SDK and SDL's build dependencies:
+
+  ```sh
+  sudo apt install clang lld cmake ninja-build pkg-config dotnet-sdk-8.0 libx11-dev libxext-dev \
+    libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev \
+    libwayland-dev libdecor-0-dev libegl1-mesa-dev libgl1-mesa-dev libdrm-dev libgbm-dev \
+    libasound2-dev libpulse-dev libpipewire-0.3-dev libdbus-1-dev libudev-dev libibus-1.0-dev \
+    libusb-1.0-0-dev libvulkan-dev
+  ```
+
+Graphics go through WebGPU ([Dawn](https://dawn.googlesource.com/dawn)), which uses Metal on macOS,
+Direct3D 12 or Vulkan on Windows and Vulkan on Linux.
 
 ## Build
 
-```sh
-git clone <this repo> wiiplay && cd wiiplay
-mkdir -p disc && cp "/path/to/Wii Play [RHAE01].nkit.iso" disc/
-./setup-mac.sh          # installs CMake/.NET 8, downloads nodtool, extracts the disc into extracted/
-scripts/configure.sh    # builds the translator, configures CMake into build/native
-scripts/rebuild.sh      # translates main.dol to C++ and builds build/native/WiiCompiled
-```
+Put your disc image in a `disc/` folder in the repository, then:
 
-The first `rebuild.sh` takes a while (it translates ~14,000 functions and compiles them).
-Run the game with `build/native/WiiCompiled`.
+| | |
+|---|---|
+| macOS | `./setup-mac.sh` (Homebrew tools + disc extraction), then `python3 scripts/build.py build` |
+| Windows | double-click `Build-Windows.cmd` (or `py -3 scripts\build.py all`) |
+| Linux | `python3 scripts/build.py all` |
+
+`scripts/build.py` does three steps you can also run on their own: `setup` (downloads
+[nodtool](https://github.com/encounter/nod) and extracts the disc into `extracted/`), `configure`
+(builds the translator and configures CMake into `build/native`) and `build [--skip-translate]`
+(translates `main.dol` to C++ and compiles). The first build takes a while: it translates ~14,000
+functions and compiles them. Run the game with `build/native/WiiCompiled` (`WiiCompiled.exe` on Windows).
 
 ## Mii data
 
@@ -51,7 +69,17 @@ software, not the game disc. With Dolphin:
 
 1. **Tools → Perform Online System Update** (downloads the official Wii Menu from Nintendo).
 2. **Tools → Load Wii System Menu**, finish setup, open the **Mii Channel** and make a Mii.
-3. Copy the files into this port's virtual NAND:
+3. Copy two files from Dolphin's Wii folder into this port's virtual NAND,
+   `build/native/UserData/NAND/shared2/menu/FaceLib/` (create it if needed):
+
+| From (inside Dolphin's `Wii` folder) | To (in `FaceLib/`) |
+|---|---|
+| `title/00010002/48414341/content/00000017.app` | `RFL_Res.dat` |
+| `shared2/menu/FaceLib/RFL_DB.dat` | `RFL_DB.dat` |
+
+Dolphin's `Wii` folder is `~/Library/Application Support/Dolphin/Wii` on macOS,
+`%APPDATA%\Dolphin Emulator\Wii` (or `Documents\Dolphin Emulator\Wii`) on Windows and
+`~/.local/share/dolphin-emu/Wii` on Linux. On macOS:
 
 ```sh
 D=build/native/UserData/NAND/shared2/menu/FaceLib; mkdir -p "$D"
