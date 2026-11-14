@@ -1,0 +1,27 @@
+# Dependabot keeps the CI actions and the translator's NuGet packages current. Native dependencies
+# (Dawn, SDL, abseil, ...) are pinned in CMake/FetchContent, which Dependabot cannot read.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: nuget
+    directories:
+      - /fw/translator/src/Translator.Core
+      - /fw/translator/src/Translator.Cli
+      - /fw/translator/tests/Translator.Tests
+      - /fw/Launcher/WiiCompiled.Setup.Common
+    schedule:
+      interval: monthly
+    groups:
+      nuget:
+        patterns: ['*']
+    # The translator targets .NET 8; stay on releases that support it.
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

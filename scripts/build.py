@@ -35,6 +35,7 @@ WIN_TOOLS = {  # same pins as the WiiCompiled/Wario Windows tooling
     'CMake': 'https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-windows-x86_64.zip',
     'Ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-win.zip',
 }
+CPPWINRT_NUPKG = 'https://www.nuget.org/api/v2/package/Microsoft.Windows.CppWinRT/3.0.260818.1'
 TRANSLATOR_PROJ = ROOT / 'fw/translator/src/Translator.Cli/Translator.Cli.csproj'
 TRANSLATOR_DLL = ROOT / 'fw/translator/src/Translator.Cli/bin/Release/net8.0/Translator.Cli.dll'
 PROJECT = 'projects/wiiplay/recomp.yml'
@@ -100,6 +101,23 @@ def windows_tools():
         (entries[0] if len(entries) == 1 and entries[0].is_dir() else staging).rename(target)
         shutil.rmtree(staging, ignore_errors=True)
         archive.unlink()
+    # C++/WinRT projection headers (music attenuation reads the system media session), generated from
+    # this machine's Windows metadata by cppwinrt.exe from the pinned NuGet package.
+    headers = TOOLS / 'cppwinrt'
+    if not (headers / 'winrt/base.h').exists():
+        tool = TOOLS / 'cppwinrt-tool'
+        if not (tool / 'bin/cppwinrt.exe').exists():
+            pkg = TOOLS / 'cppwinrt.nupkg'
+            download(CPPWINRT_NUPKG, pkg)
+            with zipfile.ZipFile(pkg) as z:
+                z.extractall(tool)
+            pkg.unlink()
+        log('generating C++/WinRT headers')
+        shutil.rmtree(headers, ignore_errors=True)
+        headers.mkdir(parents=True)
+        run([tool / 'bin/cppwinrt.exe', '-input', 'local', '-output', headers])
+        if not (headers / 'winrt/base.h').exists():
+            die('cppwinrt.exe produced no winrt/base.h')
     paths = [TOOLS / 'llvm-mingw/bin', TOOLS / 'CMake/bin', TOOLS / 'Ninja']
     os.environ['PATH'] = os.pathsep.join([str(p) for p in paths] + [os.environ.get('PATH', '')])
 
@@ -202,6 +220,7 @@ def cmake_args(build_dir, products=True):
                  f'-DCMAKE_CXX_COMPILER={(bin_ / "x86_64-w64-mingw32-clang++.exe").as_posix()}',
                  f'-DCMAKE_RC_COMPILER={(bin_ / "x86_64-w64-mingw32-windres.exe").as_posix()}',
                  f'-DCMAKE_MAKE_PROGRAM={(TOOLS / "Ninja/ninja.exe").as_posix()}',
+                 f'-DMKW_CPPWINRT_INCLUDE_DIR={(TOOLS / "cppwinrt").as_posix()}',
                  '-DCMAKE_SYSTEM_PROCESSOR=x86_64', '-DAWK:FILEPATH=']
     else:
         args += ['-DCMAKE_C_COMPILER=clang', '-DCMAKE_CXX_COMPILER=clang++']
