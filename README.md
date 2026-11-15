@@ -24,7 +24,7 @@ Next goal: **4-player Tanks!** (the original supports at most two).
 | All 9 minigames incl. Tanks! | ✅ playable |
 | Audio | ✅ |
 | Graphics | ✅ mostly correct; occasional lighting oddities |
-| Controls | keyboard + mouse (pointer), optional keyboard player 2 |
+| Controls | keyboard + mouse (pointer), Xbox/PlayStation gamepads, optional keyboard player 2; Tanks! has its own twin-stick scheme with matching on-screen button icons |
 | Platforms | macOS on Apple Silicon (played). Windows x64 and Linux compile in CI but are not play-tested yet |
 
 ## Requirements
@@ -105,6 +105,24 @@ Optional: `python3 scripts/unlock_all_games.py` unlocks all nine games in an exi
 A connected gamepad also works as a remote. Player 2 on the keyboard is for testing multiplayer:
 `WIIPLAY_KEYBOARD_P2=1 build/native/WiiCompiled`.
 
+### Tanks!
+
+Tanks! is played with the Nunchuk, so there the keyboard and gamepads act as a remote with a
+Nunchuk attached:
+
+| Action | Keyboard + mouse | Xbox / PlayStation |
+|---|---|---|
+| Move | WASD or arrow keys | left stick or D-pad |
+| Aim | mouse | right stick |
+| Fire | left click (or **B**) | RT / R2 or RB / R1 |
+| Lay a mine | right click or Space | LT / L2, LB / L1 or A / ✕ |
+| Pause | Enter or Esc | Start / Options |
+
+The game's Wii button icons change to match the device you used last: the button symbols in the
+instructions, the controls picture and the Pause badge. The icons are in `assets/button_icons/`
+(`scripts/make_button_icons.py` makes them); the build combines the in-text symbols with the
+game's own font from your disc, so no game data is stored here.
+
 ## How it works
 
 1. **Function map** — `scripts/build_map.sh` finds the ~14,000 functions in `main.dol`
@@ -127,6 +145,7 @@ draw-done handling, VI frame-buffer bookkeeping and more. Comments starting with
 
 - [WiiCompiled](https://github.com/patchzyy/Wiicompiled) by patchzyy and contributors — translator and runtime
 - [Wario Land: Shake It! native port](https://github.com/santiagovalencia109/Wario-Land-Shake-It-Native-PC) — the runtime adaptation this port started from
+- [Xelu's Free Controller Prompts](https://thoseawesomeguys.com/prompts/) by Nicolae "Xelu" Berbece (Those Awesome Guys), updated by Paul Paun — the glossy keyboard, mouse and button icons (CC0)
 - [aurora](https://github.com/encounter/aurora), [nod](https://github.com/encounter/nod), [Dolphin](https://dolphin-emu.org) (signature database), and the libraries listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)
 
 This port was developed with heavy help from an AI coding assistant (Claude), directed and

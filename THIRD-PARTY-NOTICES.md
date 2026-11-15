@@ -15,6 +15,12 @@ or data of any kind - see the [README](README.md).
 
 ## Bundled in this repository
 
+### Xelu's Free Controller Prompts - CC0 1.0 (public domain)
+
+By Nicolae "Xelu" Berbece (Those Awesome Guys), updated by Paul Paun. The glossy keyboard, mouse
+and button icons in `assets/third_party/xelu_prompts_classic.png` and the Tanks! icons cut from it
+in `assets/button_icons/`. https://thoseawesomeguys.com/prompts/
+
 ### aurora - MIT
 
 Copyright (c) 2022 Luke Street.
