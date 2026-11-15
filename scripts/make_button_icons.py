@@ -458,6 +458,133 @@ def pause_button(style):
     return img
 
 
+# ---------------------------------------------------------------------------------------------
+# Glossy icons cut from Xelu's classic free prompts sheet (CC0, by Nicolae "Xelu" Berbece; see
+# assets/third_party/CREDITS.md): they replace the drawn Pause badge and controls pictures above.
+# Without the sheet the drawn ones stay.
+
+SHEET = os.path.join(ROOT, "assets", "third_party", "xelu_prompts_classic.png")
+SHEET_BOXES = {  # left, top, right, bottom (exclusive) of each icon on the sheet
+    "esc": (506, 290, 579, 354), "key": (586, 450, 659, 514), "mouse_left": (437, 205, 488, 278),
+    "round": (266, 446, 338, 518), "stick": (101, 443, 178, 516), "dpad": (23, 443, 101, 520),
+}
+KEY_INK = (55, 55, 40, 255)  # the sheet's key labels
+
+
+def sheet_icon(sheet, name):
+    return sheet.crop(SHEET_BOXES[name])
+
+
+def labelled_key(sheet, label, width=None):
+    """The sheet's blank glossy key with a label in its italic style; `width` stretches it (Space)
+    by repeating its middle column, which keeps the rounded ends."""
+    key = sheet_icon(sheet, "key")
+    if width and width > key.width:
+        mid = key.width // 2
+        wide = Image.new("RGBA", (width, key.height))
+        wide.paste(key.crop((0, 0, mid, key.height)), (0, 0))
+        column = key.crop((mid, 0, mid + 1, key.height))
+        for x in range(mid, width - (key.width - mid)):
+            wide.paste(column, (x, 0))
+        wide.paste(key.crop((mid, 0, key.width, key.height)), (width - (key.width - mid), 0))
+        key = wide
+    d = ImageDraw.Draw(key)
+    italic = "/System/Library/Fonts/Supplemental/Arial Italic.ttf"
+    f = ImageFont.truetype(italic, 24) if os.path.exists(italic) else font(24)
+    d.text((key.width / 2 - 2, key.height / 2 - 3), label, font=f, fill=KEY_INK, anchor="mm")
+    return key
+
+
+def fit(img, size):
+    """Scaled to fit `size` (keeping its shape), centred on transparency."""
+    out = Image.new("RGBA", size, (0, 0, 0, 0))
+    scale = min(size[0] / img.width, size[1] / img.height)
+    small = img.resize((round(img.width * scale), round(img.height * scale)), Image.LANCZOS)
+    out.alpha_composite(small, ((size[0] - small.width) // 2, (size[1] - small.height) // 2))
+    return out
+
+
+def glossy_pause(sheet, style):
+    """Kept to the original + button's footprint: a circle about 100 of the 128 pixels across."""
+    out = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    if style == "keyboard":
+        # A square key looks bigger than a circle as wide: about two-thirds of the icon fills the
+        # badge's rounded end the way the round + button did.
+        out.alpha_composite(fit(sheet_icon(sheet, "esc"), (84, 84)), (22, 22))
+        return out
+    button = fit(sheet_icon(sheet, "round"), (104, 104))
+    d = ImageDraw.Draw(button)
+    for y in (37, 52, 67):  # Menu / Options: three bars, in the sheet's grey button-label tone
+        d.rounded_rectangle([32, y - 4, 72, y + 4], radius=4, fill=(150, 150, 150, 255))
+    out.alpha_composite(button, (12, 12))
+    return out
+
+
+def glossy_keyboard_picture(sheet):
+    img = card()
+    k = 2.0  # sheet keys are 73x64; drawn at twice that on the 800x640 card
+    def place(icon, x, y, scale=k):
+        big = icon.resize((round(icon.width * scale), round(icon.height * scale)), Image.LANCZOS)
+        img.alpha_composite(big, (round(x), round(y)))
+    kw, kh, gap = 73 * k, 64 * k, 8
+    group_w, group_h = 3 * kw + 2 * gap, 3 * kh + 2 * gap + 10
+    mouse_scale = 3.0
+    mouse_w, mouse_h = 51 * mouse_scale, 73 * mouse_scale
+    x0 = (W - (group_w + 70 + mouse_w)) / 2
+    y0 = (H - group_h) / 2
+    place(labelled_key(sheet, "W"), x0 + kw + gap, y0)
+    for i, label in enumerate("ASD"):
+        place(labelled_key(sheet, label), x0 + i * (kw + gap), y0 + kh + gap)
+    place(labelled_key(sheet, "Space", width=73 * 3), x0, y0 + 2 * (kh + gap) + 10)
+    mouse = sheet_icon(sheet, "mouse_left")
+    place(mouse, x0 + group_w + 70, (H - mouse_h) / 2, mouse_scale)
+    return img
+
+
+def glossy_pad_picture(sheet, style):
+    """The four Tanks! actions on the blue card, from the sheet's glossy parts: L stick (move) and
+    R stick (aim) on top, the fire trigger and the mine button below."""
+    img = card()
+    grey = (140, 140, 140, 255)
+
+    def labelled(name, label, size):
+        icon = sheet_icon(sheet, name).copy()
+        d = ImageDraw.Draw(icon)
+        f = font(size)
+        cx, cy = icon.width / 2, icon.height / 2 - (4 if name == "stick" else 1)
+        if label == "cross":
+            r = icon.width * 0.17
+            d.line([cx - r, cy - r, cx + r, cy + r], fill=grey, width=5)
+            d.line([cx - r, cy + r, cx + r, cy - r], fill=grey, width=5)
+        else:
+            d.text((cx, cy), label, font=f, fill=grey, anchor="mm")
+        return icon
+
+    fire, mine = ("RT", "A") if style == "xbox" else ("R2", "cross")
+    cells = [
+        (labelled("stick", "L", 22), 200, 190), (labelled("stick", "R", 22), 600, 190),
+        (labelled("round", fire, 22), 200, 460), (labelled("round", mine, 30), 600, 460),
+    ]
+    for icon, cx, cy in cells:
+        scale = 2.6
+        big = icon.resize((round(icon.width * scale), round(icon.height * scale)), Image.LANCZOS)
+        img.alpha_composite(big, (round(cx - big.width / 2), round(cy - big.height / 2)))
+    return img
+
+
+def write_glossy():
+    if not os.path.exists(SHEET):
+        return
+    sheet = Image.open(SHEET).convert("RGBA")
+    for style in ("xbox", "playstation", "keyboard"):
+        folder = os.path.join(OUT, style)
+        os.makedirs(folder, exist_ok=True)
+        glossy_pause(sheet, style).save(os.path.join(folder, "tex1_32x32_936c293ec061c777_3.png"))
+        picture = glossy_keyboard_picture(sheet) if style == "keyboard" else glossy_pad_picture(sheet, style)
+        picture.save(os.path.join(folder, "tex1_200x160_8643ac135bf172a4_5.png"))
+        print("wrote", folder, "(glossy, from Xelu's sheet)")
+
+
 def main():
     pictures = {"xbox": xbox_picture, "playstation": playstation_picture, "keyboard": keyboard_picture}
     for style, make in pictures.items():
@@ -467,6 +594,7 @@ def main():
         pause_button(style).save(os.path.join(folder, "tex1_32x32_936c293ec061c777_3.png"))
         write_glyphs(style, folder)
         print("wrote", folder)
+    write_glossy()
 
 
 if __name__ == "__main__":
