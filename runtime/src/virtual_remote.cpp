@@ -49,6 +49,7 @@ extern "C" uint32_t WarioHostSkipButtons() {
 #include <vector>
 
 void WarioRuntimeFixesTick();
+extern "C" bool WiiPlayTanksSceneActive();  // vi.cpp
 
 namespace VirtualRemote {
 namespace {
@@ -135,11 +136,9 @@ std::atomic<bool> g_touchShake{false};
 std::atomic<bool> g_touchShakeSinceRead{false};
 std::atomic<float> g_touchTilt{0.0f};
 
-bool InArcade() {
-    uint32_t gp = 0;
-    return Memory::TryRead32(0x8056D198u, gp) && Memory::Contains(gp, 0x48) && Memory::Read8(gp + 0x44) == 'm' &&
-           Memory::Read8(gp + 0x45) == 'g';
-}
+// WII PLAY: Tanks! aims with the pointer the whole time, so the stick-driven pointer stays up there.
+// (This used to read a Wario Land: Shake It! address, meaningless in Wii Play.)
+bool InArcade() { return WiiPlayTanksSceneActive(); }
 
 std::mutex g_mutex;
 std::array<PADStatus, PAD_MAX_CONTROLLERS> g_pads{};
@@ -343,6 +342,10 @@ bool PadInputHeld(SDL_Gamepad* gamepad, const PadInput& input) {
     return (input.sign == 0 ? value : value * static_cast<float>(input.sign)) > 0.5f;
 }
 
+// The icon set of the gamepad last pressed (else the first connected), -1 without one; see Sample().
+int g_padIconStyle = -1;
+constexpr int kKeyboardIconStyle = 3;  // aurora's button_icons/keyboard
+
 Intent GamepadIntent() {
     Intent intent;
     const auto& layouts = PadLayouts();  // parsed (and bad [gamepad] entries logged) on the first read
@@ -467,7 +470,7 @@ Intent GamepadIntent() {
     }
     SDL_free(ids);
     if (firstStyle < 0) s_lastPressedStyle = -1;
-    aurora_set_button_icon_style(s_lastPressedStyle >= 0 ? s_lastPressedStyle : firstStyle);
+    g_padIconStyle = s_lastPressedStyle >= 0 ? s_lastPressedStyle : firstStyle;  // applied in Sample()
     return intent;
 }
 
@@ -679,8 +682,11 @@ void UpdatePointer(WiiRemoteInput::KpadSample& sample) {
                 const float viewW = std::min(pictureW, pictureH * (DisplaySettings::GameWidescreen() ? 16.0f / 9.0f : 4.0f / 3.0f));
                 pos[0] = (mx - w * 0.5f) / (viewW * 0.5f);
                 pos[1] = (my - h * 0.5f) / (pictureH * 0.5f);
-                if (buttons & SDL_BUTTON_LMASK) sample.hold |= kWpadA;  // click = A where you point
-                if (buttons & SDL_BUTTON_RMASK) sample.hold |= kWpadB;  // WII PLAY: right click = B (trigger)
+                // Click = A where you point; WII PLAY: right click = B (the trigger). In Tanks! firing is
+                // the main action, so there left click fires (B) and right click lays a mine (A).
+                const bool tanks = WiiPlayTanksSceneActive();
+                if (buttons & SDL_BUTTON_LMASK) sample.hold |= tanks ? kWpadB : kWpadA;
+                if (buttons & SDL_BUTTON_RMASK) sample.hold |= tanks ? kWpadA : kWpadB;
             }
         }
     }
@@ -789,6 +795,69 @@ static bool KeyboardP2Sample(WiiRemoteInput::KpadSample& sample) {
     return true;
 }
 
+// WII PLAY: Tanks! is played with the Nunchuk: its stick drives the tank, the pointer aims, B (the
+// trigger) fires and A lays a mine. While the scene runs, player 1's keyboard and gamepads get that
+// scheme instead of the sideways-remote layout:
+//   keyboard + mouse: WASD or arrows move, the mouse aims, left click fires, right click or Space mines
+//   gamepad:          left stick or D-pad move, the right stick aims, RT/RB fire, LT/LB or the bottom
+//                     face button mine (the rest of the gamepad layout, Start = + etc., stays)
+// The stick goes to `stick`; the remote's D-pad, tilt and shake are cleared, since they would only
+// fight the stick.
+void TanksControls(Intent& keys, Intent& pads, float stick[2]) {
+    constexpr uint32_t kDpad = kWpadLeft | kWpadRight | kWpadUp | kWpadDown;
+    keys.buttons &= ~(kDpad | kWpadA);  // the A key is WASD's left now
+    keys.shake = false;
+    keys.tilt = 0.0f;
+    pads.buttons &= ~kDpad;
+    pads.shake = false;
+    pads.tilt = 0.0f;
+    pads.hasAccel = false;
+
+    float x = 0.0f, y = 0.0f;
+    int numKeys = 0;
+    const bool* k = SDL_GetKeyboardFocus() != nullptr && !Keybinds::Suppressed() ? SDL_GetKeyboardState(&numKeys) : nullptr;
+    const auto key = [&](SDL_Scancode code) { return k != nullptr && code < numKeys && k[code]; };
+    if (key(SDL_SCANCODE_W) || key(SDL_SCANCODE_UP)) y += 1.0f;
+    if (key(SDL_SCANCODE_S) || key(SDL_SCANCODE_DOWN)) y -= 1.0f;
+    if (key(SDL_SCANCODE_A) || key(SDL_SCANCODE_LEFT)) x -= 1.0f;
+    if (key(SDL_SCANCODE_D) || key(SDL_SCANCODE_RIGHT)) x += 1.0f;
+    if (key(SDL_SCANCODE_SPACE)) keys.buttons |= kWpadA;
+    if (x != 0.0f || y != 0.0f) keys.buttons |= 0x80000000u;  // marks keyboard use (cleared below)
+
+    int count = 0;
+    SDL_JoystickID* ids = SDL_GetGamepads(&count);
+    for (int i = 0; ids != nullptr && i < count; ++i) {
+        SDL_Gamepad* pad = SDL_GetGamepadFromID(ids[i]);
+        if (pad == nullptr) continue;
+        const WiiRemoteInput::Kind kind = WiiRemoteInput::KindForName(SDL_GetGamepadName(pad));
+        if (kind != WiiRemoteInput::Kind::NotWii && kind != WiiRemoteInput::Kind::WiiUPro) continue;  // real remote
+        const auto axis = [&](SDL_GamepadAxis a) { return SDL_GetGamepadAxis(pad, a) / 32767.0f; };
+        const auto button = [&](SDL_GamepadButton b) { return SDL_GetGamepadButton(pad, b); };
+        float px = axis(SDL_GAMEPAD_AXIS_LEFTX), py = -axis(SDL_GAMEPAD_AXIS_LEFTY);
+        if (px * px + py * py < 0.2f * 0.2f) px = py = 0.0f;
+        if (button(SDL_GAMEPAD_BUTTON_DPAD_LEFT)) px = -1.0f;
+        if (button(SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) px = 1.0f;
+        if (button(SDL_GAMEPAD_BUTTON_DPAD_UP)) py = 1.0f;
+        if (button(SDL_GAMEPAD_BUTTON_DPAD_DOWN)) py = -1.0f;
+        x += px;
+        y += py;
+        if (axis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 0.5f || button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) pads.buttons |= kWpadB;
+        if (axis(SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 0.5f || button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) ||
+            button(SDL_GAMEPAD_BUTTON_SOUTH)) {
+            pads.buttons |= kWpadA;
+        }
+        if (px != 0.0f || py != 0.0f) pads.buttons |= 0x80000000u;
+    }
+    SDL_free(ids);
+    const float len = std::sqrt(x * x + y * y);
+    if (len > 1.0f) {
+        x /= len;
+        y /= len;
+    }
+    stick[0] = x;
+    stick[1] = y;
+}
+
 bool Sample(uint32_t chan, WiiRemoteInput::KpadSample& sample) {
     if (chan >= PAD_MAX_CONTROLLERS) {
         return false;
@@ -819,6 +888,8 @@ bool Sample(uint32_t chan, WiiRemoteInput::KpadSample& sample) {
             intent.tilt = other.tilt;
         }
     };
+    const bool tanks = chan == 0 && WiiPlayTanksSceneActive();
+    float tanksStick[2] = {0.0f, 0.0f};
     if (chan == 0) {
         Intent keys;
         bool tiltKeys = false;
@@ -838,8 +909,22 @@ bool Sample(uint32_t chan, WiiRemoteInput::KpadSample& sample) {
             pads.tilt = 0.0f;
             pads.hasAccel = false;
         }
-        if (keyInput) g_lastInputWasPad = false;
+        bool keyUse = keyInput;
+        if (tanks) {
+            TanksControls(keys, pads, tanksStick);
+            keyUse = keys.buttons != 0;
+        }
+        if (keyUse) g_lastInputWasPad = false;
         if (pads.buttons != 0 || pads.shake || pads.tilt != 0.0f) g_lastInputWasPad = true;
+        keys.buttons &= ~0x80000000u;
+        pads.buttons &= ~0x80000000u;
+        // WII PLAY: on-screen button icons follow the device last used: the gamepad's set, or the keyboard's
+        // once a key is pressed (and with no gamepad at all). Only Tanks! has replacement icons so far; the
+        // other minigames map their controls differently, so they keep the game's Wii Remote icons.
+        static bool s_keyboardUsed = false;
+        s_keyboardUsed = s_keyboardUsed || keyUse;
+        const bool showPad = g_padIconStyle >= 0 && (g_lastInputWasPad || !s_keyboardUsed);
+        aurora_set_button_icon_style(!tanks ? -1 : showPad ? g_padIconStyle : kKeyboardIconStyle);
         merge(keys);
         merge(pads);
         merge(TouchIntent());
@@ -849,6 +934,12 @@ bool Sample(uint32_t chan, WiiRemoteInput::KpadSample& sample) {
     sample = {};
     sample.hold = intent.buttons;
     ApplyMotion(g_motion[chan], intent, sample);
+    if (tanks) {
+        sample.hasNunchuk = true;
+        sample.stick[0] = tanksStick[0];
+        sample.stick[1] = tanksStick[1];
+        sample.nunchukAcc[1] = -1.0f;  // a Nunchuk at rest, held level
+    }
     if (chan == 0) UpdatePointer(sample);
     if (chan == 0) WarioRuntimeFixesTick();  // wario_fixes.cpp
     RefreshMotor(chan);

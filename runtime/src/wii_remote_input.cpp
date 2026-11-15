@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+
+extern "C" bool WiiPlayTanksSceneActive();  // vi.cpp
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -738,7 +740,10 @@ Kind EffectiveKind(uint32_t chan) {
     if (Script().active && chan < Script().remotes) return Kind::Remote;  // NSMBW bring-up scripted remotes
     const Kind real = RealKind(chan);
     if (IsKpadKind(real)) return real;
-    return VirtualRemote::Present(chan) ? Kind::Remote : real;
+    if (!VirtualRemote::Present(chan)) return real;
+    // WII PLAY: in Tanks! the keyboard/gamepad remote has a Nunchuk, so the game uses its stick for
+    // movement (VirtualRemote::Sample fills it from WASD/arrows or the left stick).
+    return chan == 0 && WiiPlayTanksSceneActive() ? Kind::RemoteWithNunchuk : Kind::Remote;
 }
 
 // True when the game reads the port through KPAD (live or bridging a swap).

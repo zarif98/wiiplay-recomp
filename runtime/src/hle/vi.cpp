@@ -362,6 +362,9 @@ void WriteGuestStateLocked() {
     }
 }
 
+// WII PLAY: whether the Tanks! scene is loaded (dvd.cpp sets it; virtual_remote.cpp reads it).
+std::atomic<bool> g_tanksSceneActive{false};
+
 // The interval to the next retrace: the display lock's while V-Sync holds one (NTSC only).
 std::chrono::nanoseconds ActiveIntervalLocked() {
     if (g_vi.lockedInterval.count() > 0 && g_vi.tvFormat != 1) {
@@ -1435,3 +1438,13 @@ PPC_NATIVE_OVERRIDE(800FBF54, VIGetScanMode_HLE, uint32_t, (), ());
 
 
 uint32_t GamePresentedFrames() { return g_gameFramesFn(); }
+
+// WII PLAY: true while the Tanks! scene is loaded (its controls: virtual_remote.cpp).
+extern "C" bool WiiPlayTanksSceneActive() { return g_tanksSceneActive.load(std::memory_order_relaxed); }
+
+// WII PLAY: called by the DVD layer when a scene's files start loading (see dvd.cpp).
+extern "C" void WiiPlaySetTanksSceneActive(bool active) {
+    if (g_tanksSceneActive.exchange(active) != active) {
+        RT_LOGF(RT_TAG_VI, "Tanks! scene %s\n", active ? "entered" : "left");
+    }
+}

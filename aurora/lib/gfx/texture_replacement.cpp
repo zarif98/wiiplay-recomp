@@ -73,9 +73,10 @@ struct ReplacementIndexEntry {
 absl::flat_hash_map<RuntimeTextureKey, ReplacementIndexEntry> s_replacementIndex;
 // <UserData>/button_icons/<style>: per-controller button prompts, looked up before everything else.
 // The last, "common", applies whatever the style (also with none): looked up after the style's own set.
-constexpr const char* kButtonIconStyles[] = {"xbox", "playstation", "nintendo", "common"};
-constexpr int kCommonIcons = 3;
-std::array<absl::flat_hash_map<RuntimeTextureKey, ReplacementIndexEntry>, 4> s_buttonIconIndex;
+// WII PLAY: "keyboard" (keyboard and mouse) added; runtime/src/virtual_remote.cpp picks it.
+constexpr const char* kButtonIconStyles[] = {"xbox", "playstation", "nintendo", "keyboard", "common"};
+constexpr int kCommonIcons = 4;
+std::array<absl::flat_hash_map<RuntimeTextureKey, ReplacementIndexEntry>, 5> s_buttonIconIndex;
 std::atomic<int> s_buttonIconStyle{-1};
 std::atomic<bool> s_buttonIconStyleChanged{false};
 int s_appliedButtonIconStyle = -1;

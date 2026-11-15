@@ -1128,6 +1128,28 @@ static void prune_idle_texture_caches() noexcept {
   }
 }
 
+// WII PLAY: a button icon style change swaps which replacement a texture resolves to, but the
+// game's data behind it is unchanged, so revalidating (invalidate_static_texture_cache) would keep
+// every cached handle. Forget them all; the next draw resolves each texture again.
+void invalidate_static_texture_cache() noexcept;
+void drop_static_texture_caches() noexcept {
+  s_textureObjectCaches.clear();
+  s_tlutObjectCaches.clear();
+  s_staticTextureSourceCache.clear();
+  s_staticPaletteTextureSourceCache.clear();
+  s_texObjSourceKeys.clear();
+  s_texObjPaletteSourceKeys.clear();
+  s_texObjSourceKeyMemo.reset();
+  s_texObjPaletteSourceKeyMemo.reset();
+  clear_static_source_front_cache();
+  for (auto& entry : s_textureResolveIdentityCache) {
+    entry.valid = false;
+    entry.binding.reset();
+  }
+  s_textureCacheStamps = 1;  // force the revision bump and the per-slot resets below
+  invalidate_static_texture_cache();
+}
+
 void invalidate_static_texture_cache() noexcept {
   // Nothing has been marked reusable since the last bump, so every entry in every tier is already stale at the current revision.
   if (s_textureCacheStamps == 0) {
@@ -1345,7 +1367,7 @@ std::atomic<u32> g_gameMarkerFrames[8];
 
 void resolve_sampled_textures(const ShaderInfo& info) noexcept {
   ZoneScoped;
-  if (gfx::texture_replacement::take_button_icon_style_change()) invalidate_static_texture_cache();
+  if (gfx::texture_replacement::take_button_icon_style_change()) drop_static_texture_caches();
   struct MarkerCheck {
     const ShaderInfo& info;
     ~MarkerCheck() {

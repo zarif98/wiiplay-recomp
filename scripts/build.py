@@ -284,7 +284,15 @@ def build(skip_translate=False):
         write_config()
     log('compiling (the first build takes a while)')
     run(['cmake', '--build', BUILD, '--target', 'WiiCompiled'], log_file=ROOT / 'build/compile.log')
+    install_button_icons()
     log(f'built {(BUILD / ("WiiCompiled" + EXE)).relative_to(ROOT)}')
+
+
+def install_button_icons():
+    """Per-controller button icons (assets/button_icons) into UserData, the font glyphs from the disc."""
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    import button_icons
+    button_icons.install(ROOT, BUILD / 'UserData', log)
 
 
 def audit():

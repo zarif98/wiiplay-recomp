@@ -8,6 +8,7 @@
 // RAM: the game brackets them with DCInvalidateRange (not a flush), so the GX
 // layer's caches must be notified explicitly that these bytes changed.
 extern "C" void GxNotifyGuestRamDmaWrite(uint32_t addr, uint32_t size);
+extern "C" void WiiPlaySetTanksSceneActive(bool active);  // vi.cpp
 #include "hle/storage/riivolution.h"
 #include "ppc_runtime.h"
 #include "recomp_mod_loader.h"
@@ -1081,9 +1082,15 @@ extern "C" int32_t DVDReadPrio_8015E834(uint32_t fileInfoPtr, uint32_t bufferPtr
     }
 
     const DVDFileEntry& entry = g_fileEntries[extent->entryIndex];
-    {
-        static int n = 0;
-        if (offset == 0 && n++ < 400) RT_LOGF(RT_TAG_RUNTIME, "[dvdread] %s len %d\n", HostPathText(entry.hostPath).c_str(), length);
+    if (offset == 0) {
+        // WII PLAY: each minigame loads its own RP<Name>Scene folder, and the menus load RPPartyTitle.
+        // Tanks! starts when its folder is read and ends when another scene's (or the menu's) is.
+        const std::string path = entry.hostPath.generic_string();
+        if (path.find("/RPTnkScene/") != std::string::npos) {
+            WiiPlaySetTanksSceneActive(true);
+        } else if (path.find("Scene/") != std::string::npos || path.find("/RPPartyTitle/") != std::string::npos) {
+            WiiPlaySetTanksSceneActive(false);
+        }
     }
 
     if (offset < 0 || length < 0) {
